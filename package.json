@@ -1,0 +1,14 @@
+{
+  "name": "solace-go",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "docker::clean": "docker images -f 'dangling=true' -q | xargs -L1 docker rmi --force",
+    "docker::build::driver": "docker build -t solace-driver .",
+    "docker::debug::driver": "docker run -it --rm solace-driver /bin/bash || exit 0",
+    "docker::driver": "docker run --rm solace-driver"
+  },
+  "author": "",
+  "license": "ISC"
+}
