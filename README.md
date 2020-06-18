@@ -1,9 +1,9 @@
 # solace-go
 
-solclient -> solace client library
-solwrap   -> solace wrapper c++ library that links with solclient
-gosol     -> golang bare metal binding to solwrap
-gosol.lib -> golang high level binding as plugin
+| solclient | solace client library |
+| solwrap   | solace wrapper c++ library that links with solclient |
+| gosol     | golang bare metal binding to solwrap |
+| gosol.lib | golang high level binding as plugin |
 
 ## Compilation steps
 1. solwrap/x.cpp + solclient.a -> libsolwrap.a
