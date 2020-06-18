@@ -1,5 +1,7 @@
 # solace-go
 
+| Component | Description|
+|-----------|------------|
 | solclient | solace client library |
 | solwrap   | solace wrapper c++ library that links with solclient |
 | gosol     | golang bare metal binding to solwrap |
