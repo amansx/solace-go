@@ -13,6 +13,15 @@
 3. application -> solace.plugin
 
 # Solace Concepts
+## Message Format
+
+### [Structure](https://solace.com/blog/inside-solace-message-introduction/)
+* Meta data -> Header (destination, delivery mode, return address) + Properties (application properties)
+* Body -> Payload/Attachment/Application Data
+
+### [Header and Properties](https://solace.com/blog/inside-a-solace-message-using-header-properties/)
+### [Payload](https://solace.com/blog/inside-a-solace-message-part-3-payload-data/)
+
 ## [Direct Messaging](https://docs.solace.com/PubSub-Basics/Direct-Messages.htm)
 Direct messaging provides a reliable, but not guaranteed, delivery of messages from the Solace message bus to consuming clients, 
 and is the default message delivery system for Solace PubSub+. 
@@ -56,6 +65,7 @@ and to allow the delivery mode of the messages to be modified to accommodate the
 
 
 ## [Topic vs Topic Endpoint vs Queue](https://solace.com/blog/queues-vs-topic-endpoints/)
+Solace endpoints are objects created on the event broker to persist messages. There are two types of endpoints: a queue endpoint (usually just called a queue) and a topic endpoint
 
 ### Topic
 * Topic endpoint is not the same as a topic. 
@@ -77,6 +87,25 @@ and to allow the delivery mode of the messages to be modified to accommodate the
 * Non-exclusive topic endpoints can support multiple consumers for load balancing purposes.
 * **Ability to Read Without Removal**: Finally, a queue can be read from without removing messages, 
 * whereas topic endpoints require the removal of messages to be read.
+
+## [Durable vs Non-Durable](https://solace.com/blog/solace-endpoints-durable-vs-non-durable/)
+
+### Non-durable Endpoints
+A non-durable endpoint, also known as a temporary endpoint, has a shorter lifecycle and can only be created by an application. The endpoint has a lifespan of the client that created it, with an additional 60 seconds in case of unexpected disconnect. The 60 seconds provides the client with some time to reconnect to the endpoint before it and its contents are deleted from the Solace broker.
+
+### Durable Endpoints
+* A durable endpoint is one that stays on the Solace broker until it is explicitly deleted. 
+* This endpoint can be created by an administrator, or dynamically created by an application. 
+* Durable endpoints are most often used when consuming applications require all messages including those received by the event broker when the application is disconnected.
+* Through the [client-profile](https://docs.solace.com/Configuring-and-Managing/Configuring-Client-Profiles.htm#Config-Guaranteed-Params) object, an administrator can separately control whether an application is able to dynamically create its own durable or non-durable endpoints, and how many it is able to create.
+* Endpoints also have their own permissions to control which applications can consume from them, modify them, and remove them. 
+* These permissions are set when the endpoint is initially created. 
+* If a client application creates an endpoint, it is automatically the owner of that endpoint and has full access to it.
+
+
+## Queues
+* [Queue Access Types](https://solace.com/blog/solace-message-queue-access-types/)
+
 
 ## Running Solace Locally
 
