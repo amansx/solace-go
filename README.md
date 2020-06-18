@@ -70,29 +70,19 @@ and to allow the delivery mode of the messages to be modified to accommodate the
 
 ### More Ports
 
-| Service description | Type of Traffic                                                                                                                                                               |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 22                  | Host OS SSH
-
-(2222 for Solace PubSub+ software event broker Machine & Cloud Image releases prior to 8.5.0)                                                                    | Management |
-| 2222                | Solace CLI SSH/SFTP
-
-(22 for for Solace PubSub+ software event broker Machine & Cloud Image releases prior to 8.5.0)                                                          | Management |
+| Service description | Type of Traffic                                                                                                                                                               | use case   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 22                  | Host OS SSH (2222 for Solace PubSub+ software event broker Machine & Cloud Image releases prior to 8.5.0)                                                                     | Management |
+| 2222                | Solace CLI SSH/SFTP(22 for for Solace PubSub+ software event broker Machine & Cloud Image releases prior to 8.5.0)                                                            | Management |
 | 8080                | Access to PubSub+ Manager, SEMP, and SolAdmin                                                                                                                                 | Management |
-| 1943                | Access to PubSub+ Manager over HTTPS, SEMP over TLS, and SolAdmin over TLS.
-
-For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 943.        | Management |
+| 1943                | Access to PubSub+ Manager over HTTPS, SEMP over TLS, and SolAdmin over TLS.  For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 943.        | Management |
 | 5550                | Health Check Listen Port                                                                                                                                                      | Data |
 | 55555               | Solace Message Format (SMF)                                                                                                                                                   | Data |
 | 55003               | SMF compressed                                                                                                                                                                | Data |
 | 55556               | SMF routing                                                                                                                                                                   | Data |
 | 55443               | SMF TLS / SSL (with or without compression)                                                                                                                                   | Data |
-| 8008                | Web Transport - WebSockets, Comet, etc.
-
-For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 80.                                             | Data |
-| 1443                | Web Transport TLS / SSL
-
-For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 443.                                                            | Data |
+| 8008                | Web Transport - WebSockets, Comet, etc.  For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 80.                                             | Data |
+| 1443                | Web Transport TLS / SSL For Solace PubSub+ software event broker versions before the 9.4.0 release, use port 443.                                                             | Data |
 | 5671                | AMQP TLS / SSL ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of AMQP ports)              | Data |
 | 5672                | AMQP ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of AMQP ports)                        | Data |
 | 1883                | MQTT ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of MQTT ports)                        | Data |
@@ -102,8 +92,4 @@ For Solace PubSub+ software event broker versions before the 9.4.0 release, use 
 | 9000                | REST ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of REST ports)                        | Data |
 | 9443                | REST TLS / SSL ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of REST ports)              | Data |
 | 8741                | High Availability (HA) Mate Link                                                                                                                                              | HA |
-| 8300
-
-8301
-
-8302    | HA Configuration Synchronization                                                                                                                                              | HA |
+| 8300, 8301, 8302    | HA Configuration Synchronization                                                                                                                                              | HA |
