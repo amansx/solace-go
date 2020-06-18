@@ -20,13 +20,19 @@
 * Body -> Payload/Attachment/Application Data
 
 ### [Header and Properties](https://solace.com/blog/inside-a-solace-message-using-header-properties/)
+* Binary content—Binary data can be added to a message as a binary attachment. A message can only contain a single attachment.
+* When this attachment is sent through the event broker, it is not processed, transformed, or considered in subscription matching or filtering operations. This provides an efficient means for sending data that does not require processing by the platform before it reaches receiving applications.
+* Structured data can also be added as a payload in the binary attachment (refer to Using Structured Data).
+* User Property Map—Structured data can be added to user-defined message header fields.
+* User Data—Up to 36 bytes of application‑specific binary data, known as user data, can be added to the User Data message header field.
 
+
+### [Payload](https://solace.com/blog/inside-a-solace-message-part-3-payload-data/)
 * If you are sending a few headers that describe large content, consider setting the headers in the USER_PROPERTY map (set through solClient_msg_createUserPropertyMap(...)) and add the content using solClient_msg_setBinaryAttachmentPtr().
 * When building a container, always try to accurately estimate the required size. The container could be a user property map (created through createUserPropertyMap()), a map (created in a message through solClient_msg_createBinaryAttachmentMap()) or a stream (created in a message through solClient_msg_createBinaryAttachmentStream(...)).
 * When building a complex container that uses a submap or substream, write the submap or substream completely and call solClient_container_createStream(...) to finish the submap or substream before adding more to the main container.
 * [Add Data Payload](https://docs.solace.com/Solace-PubSub-Messaging-APIs/API-Developer-Guide/Adding-Data-Payloads.htm)
 
-### [Payload](https://solace.com/blog/inside-a-solace-message-part-3-payload-data/)
 
 ## [Direct Messaging](https://docs.solace.com/PubSub-Basics/Direct-Messages.htm)
 Direct messaging provides a reliable, but not guaranteed, delivery of messages from the Solace message bus to consuming clients, 
