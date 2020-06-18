@@ -161,7 +161,7 @@ A non-durable endpoint, also known as a temporary endpoint, has a shorter lifecy
 
 
 ## Unknowns
-* Additional Data in Meta?
+* Additional Data in Meta? What data?
 * Who creates Queue, Default Queue Name?
 * Acknowledgement mode - auto vs manual?
-* streaming?
+* Streaming?
