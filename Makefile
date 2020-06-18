@@ -31,7 +31,8 @@ WRAPPER_LIBS      = $(foreach l, $(WRAP_LIBS), -l$l)
 WRAPPER_GO_LIBS   = $(foreach l, $(WRAP_GO_LIBS), -l$l)
 WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
 
-RUN_TESTS    = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && LD_LIBRARY_PATH=./bin/ ./$(b) ./src/solace.properties &&) printf "==========\n"
+# RUN_TESTS    = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && LD_LIBRARY_PATH=./bin/ ./$(b) ./src/solace.properties &&) printf "==========\n"
+RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && ./$(b) &&) printf "==========\n"
 
 lib: $(SONAME)
 
@@ -55,5 +56,5 @@ binding:
 binding-tests:
 	GOPATH=$(CURDIR) go install gosol.test
 
-test:
+test-binding:
 	$(RUN_TESTS)

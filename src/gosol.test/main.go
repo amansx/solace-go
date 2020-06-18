@@ -3,9 +3,20 @@ package main
 import "fmt";
 import "time";
 import "plugin";
+import "os"
+import "path/filepath"
+
+func execPath() string {
+	ex, err := os.Executable()
+    if err != nil {
+        panic(err)
+    }
+    exPath := filepath.Dir(ex)
+    return exPath
+}
 
 func main() {
-	if so, err := plugin.Open("./solace.goplugin"); err == nil {
+	if so, err := plugin.Open(execPath() + "/solace.goplugin"); err == nil {
 
 		if gosolace, err := so.Lookup("GoSolace"); err == nil {
 
@@ -13,7 +24,7 @@ func main() {
 
 				solace := gosol().(Solace)
 				
-				solace.Connect("google.com:55555", "default", "default", "", "1")
+				solace.Connect("host.docker.internal:55555", "default", "default", "", "1")
 				
 				solace.Subscribe("aman")
 				
@@ -21,15 +32,17 @@ func main() {
 				
 				solace.Unsubscribe("aman")
 				
-				time.Sleep(10 * time.Second)
+				time.Sleep(2 * time.Second)
 
 				return
 
 			}
 
+		} else {
 			fmt.Println(err)
 		}
 
+	} else {
 		fmt.Println(err)
 	}
 

@@ -16,4 +16,4 @@ make lib
 make lib-tests
 make binding
 make binding-tests
-make test
+make test-binding
