@@ -66,12 +66,17 @@ and to allow the delivery mode of the messages to be modified to accommodate the
 * Topic endpoints are more closely related to queues than to topics.
 
 ### Topic Endpoint vs Queue
-* *Sending by Name*: A producing application has the option to send a message directly to a queue by referencing that queue by its name in the message properties. A producing application cannot, however, reference topic endpoints by name, and therefore only persist messages routed to the topic subscription applied to the topic endpoint.
-* *Support for Multiple Topic Subscriptions*: Queues support multiple topic subscriptions. This allows for topic aggregation to a single consuming application. Topic endpoints support a single subscription; should that subscription change, all messages persisted to the topic endpoint are deleted. Messages persisted in queues are unaffected by subscription changes.
-* *Application of Selectors*: Selectors can be applied to either type of endpoint to apply conditional logic, but the two endpoints differ in when the conditional is processed. With queues, selectors are processed at egress, and with topic endpoints they are processed on ingress. This means that queues persist every message even if they don’t match the selector, while with topic endpoints messages are only persisted if they match both the topic subscription and the selector.
-* *Support for Multiple Consumers*: Queues support multiple consumers, providing a fault tolerant option should a consuming application disconnect from the queue. Exclusive topic endpoints support a single consumer, matching the functionality of a JMS durable subscription. 
-Non-exclusive topic endpoints can support multiple consumers for load balancing purposes.
-* *Ability to Read Without Removal*: Finally, a queue can be read from without removing messages, whereas topic endpoints require the removal of messages to be read.
+* **Sending by Name**: A producing application has the option to send a message directly to a queue by referencing that queue by its name in the message properties. 
+* A producing application cannot, however, reference topic endpoints by name, and therefore only persist messages routed to the topic subscription applied to the topic endpoint.
+* **Support for Multiple Topic Subscriptions**: Queues support multiple topic subscriptions. This allows for topic aggregation to a single consuming application. 
+* Topic endpoints support a single subscription; should that subscription change, all messages persisted to the topic endpoint are deleted. Messages persisted in queues are unaffected by subscription changes.
+* **Application of Selectors**: Selectors can be applied to either type of endpoint to apply conditional logic, but the two endpoints differ in when the conditional is processed. With queues, selectors are processed at egress, and with topic endpoints they are processed on ingress. This means that queues persist every message even if they don’t match the selector, 
+* while with topic endpoints messages are only persisted if they match both the topic subscription and the selector.
+* **Support for Multiple Consumers**: Queues support multiple consumers, providing a fault tolerant option should a consuming application disconnect from the queue. 
+* Exclusive topic endpoints support a single consumer, matching the functionality of a JMS durable subscription. 
+* Non-exclusive topic endpoints can support multiple consumers for load balancing purposes.
+* **Ability to Read Without Removal**: Finally, a queue can be read from without removing messages, 
+* whereas topic endpoints require the removal of messages to be read.
 
 ## Running Solace Locally
 
