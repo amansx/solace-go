@@ -3,17 +3,6 @@ package main
 import "fmt";
 import "time";
 import "plugin";
-import "os"
-import "path/filepath"
-
-func execPath() string {
-	ex, err := os.Executable()
-    if err != nil {
-        panic(err)
-    }
-    exPath := filepath.Dir(ex)
-    return exPath
-}
 
 func main() {
 	if so, err := plugin.Open(execPath() + "/solace.goplugin"); err == nil {
