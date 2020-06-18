@@ -13,7 +13,7 @@ func main() {
 
 				solace := gosol().(Solace)
 				
-				solace.Connect("host.docker.internal:55555", "default", "default", "", "1")
+				solace.Connect("google.com:55555", "default", "default", "", "1")
 				
 				solace.Subscribe("aman")
 				
