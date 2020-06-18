@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "docker::clean": "docker images -f 'dangling=true' -q | xargs -L1 docker rmi --force",
-    "docker::build::driver": "docker build -t solace-driver .",
-    "docker::debug::driver": "docker run -it --rm solace-driver /bin/bash || exit 0",
-    "docker::driver": "docker run --rm solace-driver"
+    "docker::solace": "docker run -d -p 8080:8080 -p 55555:55555 --shm-size=2g --env username_admin_globalaccesslevel=admin --env username_admin_password=admin --name=solace solace-pubsub-standard:9.5.0.30",
+    "docker::solace::install": "./solace-standard/install.sh",
+    "docker::driver": "docker run -v $INIT_CWD/src:/root/solace/src -v $INIT_CWD/solwrap:/root/solace/solwrap -v $INIT_CWD/bin:/root/solace/bin --rm solace-driver",
+    "docker::driver::build": "docker build -t solace-driver .",
+    "docker::driver::debug": "docker run -v $INIT_CWD/Makefile:/root/solace/Makefile -v $INIT_CWD/build.sh:/root/solace/build.sh -v $INIT_CWD/bin:/root/solace/bin -v $INIT_CWD/src:/root/solace/src -v $INIT_CWD/solwrap:/root/solace/solwrap -it --rm solace-driver /bin/bash || exit 0"
   },
   "author": "",
   "license": "ISC"

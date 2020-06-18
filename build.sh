@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-g++ --version
-gvm version
-go version
 
-mkdir -p bin
+echo "=============================="
+g++ --version
+echo "=============================="
+gvm version
+echo "=============================="
+go version
+echo "=============================="
+
+mkdir -p lib
+mkdir -p test
+mkdir -p bin && rm ./bin/*
 
 make lib
 make lib-tests
-make bindings
-make examples
+make binding
+make binding-tests

@@ -5,44 +5,55 @@ SOLWRAP_DIR    = $(CURDIR)/solwrap
 SOLCLIENT_DIR  = $(CURDIR)/solclient
 
 BUILD_DIR      = $(CURDIR)/bin
+TEST_DIR       = $(CURDIR)/test
 
 PYINC=
 PYLIB=
 PYDEF=
 
-INCDIRS = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
-LIBDIRS = $(SOLCLIENT_DIR)/lib $(SOLWRAP_DIR)/lib
+INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
+LIBDIRS              = $(CURDIR)/lib $(SOLCLIENT_DIR)/lib
+STATIC_LIBS          = $(CURDIR)/lib/libsolwrap.a $(SOLCLIENT_DIR)/lib/libsolclient.a
+WRAP_LIBS            = pthread
+WRAP_BIN_LIBS        = pthread rt
+WRAP_GO_LIBS         = pthread rt stdc++
+SYMS                 = PROVIDE_LOG_UTILITIES SOLCLIENT_CONST_PROPERTIES _REENTRANT _LINUX_X86_64
+DEBUG                = -g
 
-SYMS    = PROVIDE_LOG_UTILITIES SOLCLIENT_CONST_PROPERTIES _REENTRANT _LINUX_X86_64
-DEBUG   = -g
+SOL_SRC     = $(wildcard $(CURDIR)/solwrap/src/*.cpp)
+SOL_TEST    = $(wildcard ./bin/*.test)
 
-WRAP_LIBS  = solclient pthread
-ALL_LIBS   = $(LIBNAME) solclient pthread
+# -Wl,--whole-archive libAlgatorc.a -Wl,--no-whole-archive
+CXXFLAGS_LIB = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
+CXXFLAGS     = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
 
-CXXFLAGS      = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
+WRAPPER_LIBS      = $(foreach l, $(WRAP_LIBS), -l$l)
+WRAPPER_GO_LIBS   = $(foreach l, $(WRAP_GO_LIBS), -l$l)
+WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
 
-LIBS_DIR     = $(foreach d, $(LIBDIRS), -L$d)
-LIBS_WRAP    = $(foreach l, $(WRAP_LIBS), -l$l)
-LIBS         = $(foreach l, $(ALL_LIBS), -l$l)
-
-SOL_SRC     = $(wildcard solwrap/src/*.cpp)
+RUN_TESTS    = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && LD_LIBRARY_PATH=./bin/ ./$(b) ./src/solace.properties &&) printf "==========\n"
 
 lib: $(SONAME)
 
 $(SONAME): $(SOL_SRC)
-	$(CXX) -shared $(CXXFLAGS) $(LIBS_DIR) $(LIBS_WRAP) -fPIC -o $(SOLWRAP_DIR)/lib/$(SONAME) $(SOL_SRC)
-	cp $(SOLWRAP_DIR)/lib/$(SONAME) $(BUILD_DIR)
-	cp $(SOLCLIENT_DIR)/lib/libsolclient.so.1 $(BUILD_DIR)
+	cd lib &&\
+		$(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC &&\
+		ar -rcs libsolwrap.a *.o &&\
+		rm *.o
 
 lib-tests:
-	$(CC)  $(CXXFLAGS) $(LIBS_DIR) -o $(BUILD_DIR)/test_c_client       $(SOLWRAP_DIR)/tests/c_client_test.c $(LIBS)
-	$(CXX) $(CXXFLAGS) $(LIBS_DIR) -o $(BUILD_DIR)/test_direct         $(SOLWRAP_DIR)/tests/direct_test.cpp $(LIBS)
-	$(CXX) $(CXXFLAGS) $(LIBS_DIR) -o $(BUILD_DIR)/test_persistent     $(SOLWRAP_DIR)/tests/persistent_test.cpp $(LIBS)
-	$(CXX) $(CXXFLAGS) $(LIBS_DIR) -o $(BUILD_DIR)/test_cache          $(SOLWRAP_DIR)/tests/cache_test.cpp $(LIBS)
-	$(CXX) $(CXXFLAGS) $(LIBS_DIR) -o $(BUILD_DIR)/test_subscribe      $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(LIBS)
+# 	$(CC)  $(CXXFLAGS) -o $(TEST_DIR)/c_client.test   $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/cache.test     $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/direct.test     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/persistent.test $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/subscribe.test  $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 
-bindings:
-	GOPATH=$(CURDIR) CGO_LDFLAGS="$(LIBS_DIR) $(LIBS)" CGO_CFLAGS="$(CXXFLAGS)" go install gosol
+binding:
+	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="$(CXXFLAGS)" go install gosol
+	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -buildmode=plugin -o $(BUILD_DIR)/gosol.lib src/gosol.lib/main.go
 
-examples:
-	GOPATH=$(CURDIR) CGO_LDFLAGS="$(LIBS_DIR) $(LIBS)" CGO_CFLAGS="$(CXXFLAGS)" go install solace-example
+binding-tests:
+	GOPATH=$(CURDIR) go install gosol.test
+
+test:
+	$(RUN_TESTS)

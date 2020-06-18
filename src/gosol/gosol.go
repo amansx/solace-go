@@ -1,21 +1,27 @@
 /* 
-Package gosol provides acces to the solace messaging platform for pub/sub,
-queueing and guaranteed messaging capabilities.
+Package gosol provides acces to the solace messaging platform for 
+pub/sub,
+queueing and 
+guaranteed messaging capabilities.
 
 All message delivery to message-consumer applications is asynchronous,
-via a registered MsgHandler event callback. The entire package is mainly
-an asynchronous API, providing an interface by which applications can
-register several different asynchronous event-handlers for notifications
-of Message, Error, Connectivity and Publisher events. These events
-are registered with the underlying Solace messaging API by passing
-function-references into the Init() function, which should always be
-the first function called in any Solace messaging client session.
+via a registered MsgHandler event callback. 
+
+The entire package is mainly an asynchronous API, providing an interface by which applications can
+register several different asynchronous event-handlers for notifications of 
+Message, 
+Error, 
+Connectivity and 
+Publisher events. 
+
+These events are registered with the underlying Solace messaging API 
+by passing function-references into the Init() function, 
+which should always be the first function called in any Solace messaging client session.
 
 The API supports several common messaging use cases such as:
 
-- Publish/Subscribe messaging that decouples producers and consumers from 
-each other, usually over a non-guaranteed transport but also supported for 
-Guaranteed transport
+- Publish/Subscribe messaging that decouples producers and consumers from each other, 
+usually over a non-guaranteed transport but also supported for Guaranteed transport
 
 - Point-to-point queueing of guaranteed messages via a named queue known 
 by the publisher and subscriber applications

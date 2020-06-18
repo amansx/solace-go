@@ -19,6 +19,8 @@ COPY src/ /root/solace/src/
 COPY Makefile /root/solace/Makefile
 COPY build.sh /root/solace/build.sh
 
-RUN source /root/.gvm/scripts/gvm &&\
+RUN source /root/.gvm/scripts/gvm && gvm use go1.14.4 --default
+
+CMD source /root/.gvm/scripts/gvm &&\
 	gvm use go1.14.4 --default &&\
 	./build.sh
