@@ -327,6 +327,30 @@ func Connect(sess SESSION, propsfile string) int {
 }
 
 /*
+Connect establishes a TCP connection to a Solace message broker for the provided
+SESSION with the session properties provided in the propsfile. For details about
+Solace session properties, consult the Solace API reference documentation.
+*/
+func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, windowsize string) int {
+	// C.CString allocates new memory on the heap, so need to cleanup afterwards
+	chost := C.CString(host)
+	cvpn  := C.CString(vpn)
+	cuser := C.CString(user)
+	cpass := C.CString(pass)
+	cws   := C.CString(windowsize)
+
+	rc    := int( C.sol_connect_with_params( C.SOLHANDLE(sess), chost, cvpn, cuser, cpass, cws ) )
+
+	C.free(unsafe.Pointer(chost))
+	C.free(unsafe.Pointer(cvpn))
+	C.free(unsafe.Pointer(cuser))
+	C.free(unsafe.Pointer(cpass))
+	C.free(unsafe.Pointer(cws))
+
+	return rc
+}
+
+/*
 Disconnect gracefully shuts down a TCP connection to a Solace message broker 
 for the provided SESSION.
 */

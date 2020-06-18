@@ -13,6 +13,9 @@ extern "C" {
     SOL_API int sol_test_cbs(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb con_cb, void* user_data);
 
     SOL_API int sol_connect(SOLHANDLE handle, const char* propsfile);
+    
+    SOL_API int sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* windowsize);
+    
     SOL_API int sol_disconnect(SOLHANDLE handle);
 
     SOL_API int sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen);

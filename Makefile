@@ -50,7 +50,7 @@ lib-tests:
 
 binding:
 	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="$(CXXFLAGS)" go install gosol
-	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -buildmode=plugin -o $(BUILD_DIR)/gosol.lib src/gosol.lib/main.go
+	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -buildmode=plugin -o $(BUILD_DIR)/solace.goplugin src/gosol.lib/*.go
 
 binding-tests:
 	GOPATH=$(CURDIR) go install gosol.test

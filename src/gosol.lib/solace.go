@@ -1,5 +1,6 @@
 package main
 
+import "unsafe"
 import "gosol"
 
 type Solace struct {
@@ -22,32 +23,64 @@ func (this *Solace) Init() {
 	// publish and wait for the ack synchronously like a JMS persistent
 	// publisher). Possible events include message ACK and REJECT events.
 
-	this.sess := gosol.Init(
+	this.sess = gosol.Init(
 		gosol.MsgHandler(on_msg),
 		gosol.ErrHandler(on_err), 
 		nil, 
-		nil
-	)	
+		nil,
+	)
 }
 
-func (this Solace) Connect() {
-	gosol.Connect(this.sess, propertiesFilePath)
+func (this Solace) Connect(host string, vpn string, user string, pass string, windowsize string) {
+	gosol.ConnectWithParams(this.sess, host, vpn, user, pass, windowsize)
 }
 
 func (this Solace) Disconnect() {
 	gosol.Disconnect(this.sess)
 }
 
-func (this Solace) Subscribe(topic String) {
+func (this Solace) Subscribe(topic string) {
 	gosol.SubscribeTopic(this.sess, topic)
 }
 
-func (this Solace) Unsubscribe(topic String) {
+func (this Solace) Unsubscribe(topic string) {
 	gosol.UnsubscribeTopic(this.sess, topic)
 }
 
-func (this Solace) PublishDirect(topic String, payload []byte) {
-	payloadptr := unsafe.Pointer(&bytes[0])
+func (this Solace) Publish(topicName string, payload []byte) {
+	payloadptr := unsafe.Pointer(&payload[0])
+	payloadLen := len(payload)
+	gosol.SendPersistent(this.sess, topicName, gosol.TOPIC, payloadptr, payloadLen)
+}
+
+func (this Solace) PublishDirect(topic string, payload []byte) {
+	payloadptr := unsafe.Pointer(&payload[0])
 	payloadLen := len(payload)
 	gosol.SendDirect(this.sess, topic, payloadptr, payloadLen)
+}
+
+func (this Solace) PublishToQueue(queueName string, payload []byte) {
+	payloadptr := unsafe.Pointer(&payload[0])
+	payloadLen := len(payload)
+	gosol.SendPersistent(this.sess, queueName, gosol.QUEUE, payloadptr, payloadLen)
+}
+
+/*
+Cut-Through Messaging allows for the delivery of Guaranteed messages with very low latency from Solace PubSub+ to consumers. This is done by using the low-latency, Direct Messaging data path for the bulk of the message flow, 
+while also relying on the Guaranteed Messaging data path for message recovery in the event of a message loss. Cut-Through Messaging is not supported when the corresponding queue or topic endpoint is configured to respect message priority values
+*/
+func (this Solace) BindQueue(queueName string) {
+	gosol.BindQueue(this.sess, queueName, gosol.STORE_FWD, gosol.AUTO_ACK)
+}
+
+func (this Solace) BindQueueManualAck(queueName string) {
+	gosol.BindQueue(this.sess, queueName, gosol.STORE_FWD, gosol.MANUAL_ACK)
+}
+
+func (this Solace) UnbindQueue(queueName string) {
+	gosol.UnbindQueue(this.sess, queueName)
+}
+
+func (this Solace) Ack(msgFlow uint64, msgID uint64) {
+	gosol.AckMsg(this.sess, msgFlow, msgID)
 }

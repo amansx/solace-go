@@ -1,11 +1,9 @@
 package main
 
-var singleton Solace
+var singleton *Solace
 
-type driverinitializer string
-func (this driverinitializer) Load() {
-	singleton = Solace{}
+func GoSolace() interface{} {
+	singleton = &Solace{}
 	singleton.Init()
+	return singleton
 }
-
-var GoSolace driverinitializer
