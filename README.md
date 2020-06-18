@@ -25,7 +25,7 @@
 * Structured data can also be added as a payload in the binary attachment (refer to Using Structured Data).
 * User Property Map—Structured data can be added to user-defined message header fields.
 * User Data—Up to 36 bytes of application‑specific binary data, known as user data, can be added to the User Data message header field.
-
+* [Best Practices](https://docs.solace.com/Solace-PubSub-Messaging-APIs/API-Developer-Guide/C-API-Best-Practices.htm)
 
 ### [Payload](https://solace.com/blog/inside-a-solace-message-part-3-payload-data/)
 * If you are sending a few headers that describe large content, consider setting the headers in the USER_PROPERTY map (set through solClient_msg_createUserPropertyMap(...)) and add the content using solClient_msg_setBinaryAttachmentPtr().
