@@ -71,6 +71,7 @@ package gosol
 // }
 import "C"
 import "unsafe"
+import "gosol_t"
 
 // Session handle is return from Init(), and passed into all other functions
 type SESSION uint64
@@ -114,70 +115,18 @@ const (
 
 
 /*
-MsgEvent is passed to a registered MsgHandler callback for each Solace
-message-event received, for either Guaranteed or Direct transports
-*/
-type MsgEvent  struct {
-	DestType    int
-	Destination string
-	Flow        uint64
-	MsgId       uint64
-	Buffer      unsafe.Pointer
-	BufLen      uint
-	ReqId       int
-	Redelivered bool
-	Discard     bool
-}
-
-
-/*
-ErrEvent is passed to a registered ErrHandler callback for each Solace 
-error-event received
-*/
-type ErrEvent  struct {
-	FNName    string
-	RetCode   int
-	RCStr     string
-	SubCode   int
-	SCStr     string
-	RespCode  int
-	ErrStr    string
-}
-
-
-/*
-PubEvent is passed to a registered PubHandler callback for each
-Solace publisher-event received such as message ACK or REJECT events; for
-streaming publishers it can include publisher-provided correlation data.
-*/
-type PubEvent struct {
-	Type            int
-	CorrelationData unsafe.Pointer
-}
-
-
-/*
-ConEvent is passed to a registered ConHandler callback for each Solace
-connectivity-event received such as disconnect/reconnecting/reconnected
-events
-*/
-type ConEvent struct {
-	Type      int
-}
-
-
-/*
 MsgHandler functions are registered callbacks invoked upon receipt
 of Solace messages for all transports (Guaranteed and Direct). See also
 type MsgEvent.
 */
-type MsgHandler func(sess SESSION, msg *MsgEvent)
+// type MsgHandler func(sess SESSION, msg *MsgEvent)
+type MsgHandler func(msg gosol_t.MessageEvent)
 
 /*
 ErrHandler functions are registered callbacks invoked upon Solace
 errors. See also type ErrEvent.
 */
-type ErrHandler func(sess SESSION, err *ErrEvent)
+type ErrHandler func(err gosol_t.ErrorEvent)
 
 /*
 PubHandler functions are registered callbacks invoked upon Solace
@@ -185,14 +134,14 @@ Publisher events such as message ACK or REJECT events; for streaming
 publishers it can include publisher-provided correlation data.. See also
 type PubEvent.
 */
-type PubHandler func(sess SESSION, pub *PubEvent)
+type PubHandler func(pub gosol_t.PublisherEvent)
 
 /*
 ConHandler functions are registered callbacks invoked upon Solace
 Connectivity events such as disconnect/reconnecting/reconnected
 events. See also type ConEvent.
 */
-type ConHandler func(sess SESSION, con *ConEvent)
+type ConHandler func(con gosol_t.ConnectionEvent)
 
 /*
 The Callbacks struct contains callback function references for all
@@ -232,23 +181,50 @@ func i2b(i C.int) bool {
 	return false
 }
 
+func destinationTypeToString(i int) string {
+	switch i {
+		case 1: return "TOPIC"
+		case 2: return "QUEUE"
+	}
+	return "NONE"
+}
+
+func connectionTypeToString(i int) string {
+	switch i {
+		case 1: return "UP"
+		case 2: return "RECONNECTING"
+		case 3: return "RECONNECTED"
+	}
+	return "DOWN"
+}
+
+func publishedEventTypeToString(i int) string {
+	switch i {
+	case 1:
+		return "ACK"
+	}
+	return "REJECT"
+}
+
 //export gosol_on_msg
 func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 	ctx := (*Callbacks)(m.user_data)
 
 	if ctx.MsgCB != nil {
-		evt            := new(MsgEvent)
-		evt.DestType    = int(m.desttype)
-		evt.Destination = C.GoString(m.destination)
-		evt.Flow        = uint64(m.flow)
-		evt.MsgId       = uint64(m.id)
-		evt.Buffer      = unsafe.Pointer(m.buffer)
-		evt.BufLen      = uint(m.buflen)
-		evt.ReqId       = int(m.req_id)
-		evt.Redelivered = i2b(m.redelivered_flag)
-		evt.Discard     = i2b(m.discard_flag)
+		evt                  := gosol_t.MessageEvent{}
+		evt.Session          = uint64(h)
+		evt.DestinationType  = destinationTypeToString(int(m.desttype))
+		evt.Destination      = C.GoString(m.destination)
+		evt.Flow             = uint64(m.flow)
+		evt.MessageID        = uint64(m.id)
+		evt.Buffer           = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+		evt.BufferLen        = uint(m.buflen)
+		evt.RequestID        = int(m.req_id)
+		evt.Redelivered      = i2b(m.redelivered_flag)
+		evt.Discard          = i2b(m.discard_flag)
 
-		ctx.MsgCB( SESSION(h), evt )
+		// ctx.MsgCB( SESSION(h), evt )
+		ctx.MsgCB(evt)
 	}
 }
 
@@ -257,16 +233,17 @@ func gosol_on_err(h SESSION, e *C.struct_error_event) {
 	ctx := (*Callbacks)(e.user_data)
 
 	if ctx.ErrCB != nil {
-		evt         := new(ErrEvent)
-		evt.FNName   = C.GoString(e.fn_name)
-		evt.RetCode  = int(e.return_code)
-		evt.RCStr    = C.GoString(e.rc_str)
-		evt.SubCode  = int(e.sub_code)
-		evt.SCStr    = C.GoString(e.sc_str)
-		evt.RespCode = int(e.resp_code)
-		evt.ErrStr   = C.GoString(e.err_str)
+		evt          := gosol_t.ErrorEvent{}
+		evt.Session      = uint64(h)
+		evt.FunctionName = C.GoString(e.fn_name)
+		evt.ReturnCode   = int(e.return_code)
+		evt.RCStr        = C.GoString(e.rc_str)
+		evt.SubCode      = int(e.sub_code)
+		evt.SCStr        = C.GoString(e.sc_str)
+		evt.ResponseCode = int(e.resp_code)
+		evt.ErrorStr     = C.GoString(e.err_str)
 
-		ctx.ErrCB( SESSION(h), evt )
+		ctx.ErrCB(evt)
 	}
 }
 
@@ -275,11 +252,12 @@ func gosol_on_pub(h SESSION, p *C.struct_publisher_event) {
 	ctx := (*Callbacks)(p.user_data)
 
 	if ctx.PubCB != nil {
-		evt                := new(PubEvent)
-		evt.Type            = int(p._type)
+		evt                := gosol_t.PublisherEvent{}
+		evt.Session         = uint64(h)
+		evt.Type            = publishedEventTypeToString(int(p._type))
 		evt.CorrelationData = unsafe.Pointer(p.correlation_data)
 
-		ctx.PubCB( SESSION(h), evt )
+		ctx.PubCB(evt)
 	}
 }
 
@@ -288,10 +266,11 @@ func gosol_on_con(h SESSION, c *C.struct_connectivity_event) {
 	ctx := (*Callbacks)(c.user_data)
 
 	if ctx.ConCB != nil {
-		evt      := new(ConEvent)
-		evt.Type  = int(c._type)
+		evt         := gosol_t.ConnectionEvent{}
+		evt.Session = uint64(h)
+		evt.Type    = connectionTypeToString(int(c._type))
 
-		ctx.ConCB( SESSION(h), evt )
+		ctx.ConCB(evt)
 	}
 }
 

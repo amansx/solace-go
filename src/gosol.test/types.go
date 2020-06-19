@@ -1,7 +1,7 @@
 package main
 
 type Solace interface {
-	Init()
+	Init(func(interface{}))
 	Connect(string, string, string, string, string)
 	Disconnect()
 	Subscribe(string)
@@ -13,4 +13,17 @@ type Solace interface {
 	BindQueueManualAck(string)
 	UnbindQueue(string)
 	Ack(uint64, uint64)
+}
+
+type MessageEvent struct {
+	Session            uint64
+	DestinationType    string
+	Destination        string
+	Flow               uint64
+	MessageID          uint64
+	Buffer             []byte
+	BufferLen          uint
+	RequestID          int
+	Redelivered        bool
+	Discard            bool
 }

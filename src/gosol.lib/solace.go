@@ -1,13 +1,15 @@
 package main
 
+import "C"
 import "unsafe"
 import "gosol"
+import "gosol_t"
 
 type Solace struct {
 	sess gosol.SESSION
 }
 
-func (this *Solace) Init() {
+func (this *Solace) Init(onMessage gosol_t.MessageHandler, onError gosol_t.ErrorHandler, onConnection gosol_t.ConnectionEventHandler, onPublisherEvent gosol_t.PublisherEventHandler) {
 	// - MsgCB: Event callback for message events; this is invoked for all message 
 	// transports, Guaranteed and Direct.
 	     
@@ -24,10 +26,10 @@ func (this *Solace) Init() {
 	// publisher). Possible events include message ACK and REJECT events.
 
 	this.sess = gosol.Init(
-		gosol.MsgHandler(on_msg),
-		gosol.ErrHandler(on_err), 
-		nil, 
-		nil,
+		gosol.MsgHandler(onMessage),
+		gosol.ErrHandler(onError),
+		gosol.ConHandler(onConnection), 
+		gosol.PubHandler(onPublisherEvent),
 	)
 }
 
@@ -66,8 +68,10 @@ func (this Solace) PublishToQueue(queueName string, payload []byte) {
 }
 
 /*
-Cut-Through Messaging allows for the delivery of Guaranteed messages with very low latency from Solace PubSub+ to consumers. This is done by using the low-latency, Direct Messaging data path for the bulk of the message flow, 
-while also relying on the Guaranteed Messaging data path for message recovery in the event of a message loss. Cut-Through Messaging is not supported when the corresponding queue or topic endpoint is configured to respect message priority values
+Cut-Through Messaging allows for the delivery of Guaranteed messages with very low latency from Solace PubSub+ to consumers. 
+This is done by using the low-latency, Direct Messaging data path for the bulk of the message flow, 
+while also relying on the Guaranteed Messaging data path for message recovery in the event of a message loss. 
+Cut-Through Messaging is not supported when the corresponding queue or topic endpoint is configured to respect message priority values
 */
 func (this Solace) BindQueue(queueName string) {
 	gosol.BindQueue(this.sess, queueName, gosol.STORE_FWD, gosol.AUTO_ACK)
@@ -81,6 +85,6 @@ func (this Solace) UnbindQueue(queueName string) {
 	gosol.UnbindQueue(this.sess, queueName)
 }
 
-func (this Solace) Ack(msgFlow uint64, msgID uint64) {
-	gosol.AckMsg(this.sess, msgFlow, msgID)
+func (this Solace) Ack(flow uint64, msgID uint64) {
+	gosol.AckMsg(this.sess, flow, msgID)
 }

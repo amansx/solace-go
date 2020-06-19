@@ -1,13 +1,14 @@
 package main
 
 import "os"
+import "path"
 import "path/filepath"
 
-func execPath() string {
+func pluginPath(pluginName string) string {
 	ex, err := os.Executable()
     if err != nil {
         panic(err)
     }
     exPath := filepath.Dir(ex)
-    return exPath
+    return path.Join(exPath, pluginName)
 }
