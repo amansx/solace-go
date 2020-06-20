@@ -85,7 +85,7 @@ int main(int c, char** a)
 
     rc = sol_bind_queue( session, "q0", STORE_FWD, MANUAL_ACK );
     for(int j=0; j<10; ++j) {
-        sol_send_persistent( session, queue_name, QUEUE, buffer, buflen, &j, sizeof(j) );
+        sol_send_persistent( session, queue_name, QUEUE, buffer, buflen, &j, sizeof(j), "" );
     }
     sol_unbind_queue( session, "q0" );
 

@@ -79,7 +79,7 @@ int main(int c, char** a)
 
         sol_subscribe_topic( session, direct_topic );
         for(int i=0; i<10; ++i) {
-            sol_send_direct( session, direct_topic, buffer, buflen );
+            sol_send_direct( session, direct_topic, buffer, buflen, "");
         }
         sol_unsubscribe_topic( session, direct_topic );
 

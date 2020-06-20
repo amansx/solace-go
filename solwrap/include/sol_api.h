@@ -18,8 +18,8 @@ extern "C" {
     
     SOL_API int sol_disconnect(SOLHANDLE handle);
 
-    SOL_API int sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen);
-    SOL_API int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_type type, void* buffer, int buflen, void* correlation_p, int corrlen);
+    SOL_API int sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, const char* user_properties);
+    SOL_API int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_type type, void* buffer, int buflen, void* correlation_p, int corrlen, const char* user_properties);
 
     SOL_API int sol_subscribe_topic(SOLHANDLE handle, const char* topic);
     SOL_API int sol_unsubscribe_topic(SOLHANDLE handle, const char* topic);

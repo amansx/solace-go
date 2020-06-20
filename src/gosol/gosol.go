@@ -222,6 +222,7 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.RequestID        = int(m.req_id)
 		evt.Redelivered      = i2b(m.redelivered_flag)
 		evt.Discard          = i2b(m.discard_flag)
+		evt.UserProperties   = C.GoString(m.user_properties)
 
 		// ctx.MsgCB( SESSION(h), evt )
 		ctx.MsgCB(evt)
@@ -346,9 +347,11 @@ payload is expected to be Serialized by the calling application and
 provided to gosol as a binary data buffer.
 */
 func SendDirect(sess SESSION, topic string, buffer unsafe.Pointer, buflen int) int {
-	ctopic := C.CString(topic)
-	rc     := int( C.sol_send_direct( C.SOLHANDLE(sess), ctopic, buffer, C.int(buflen) ) )
+	ctopic     := C.CString(topic)
+	cuserProps := C.CString("{\"string\": { \"a\": 1 }}")
+	rc     := int( C.sol_send_direct( C.SOLHANDLE(sess), ctopic, buffer, C.int(buflen), cuserProps ) )
 	C.free( unsafe.Pointer(ctopic) )
+	C.free( unsafe.Pointer(cuserProps) )
 	return rc
 }
 
@@ -360,8 +363,10 @@ desttype parameter (TOPIC | QUEUE).
 */
 func SendPersistent(sess SESSION, dest string, desttype uint32, buffer unsafe.Pointer, buflen int) int {
 	cdest := C.CString(dest)
-	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, desttype, buffer, C.int(buflen), nil, 0 ) )
+	cuserProps := C.CString("{\"string\": { \"a\": \"1\", \"b\": \"1\" }}")
+	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, desttype, buffer, C.int(buflen), nil, 0, cuserProps ) )
 	C.free( unsafe.Pointer(cdest) )
+	C.free( unsafe.Pointer(cuserProps) )
 	return rc
 }
 
@@ -377,8 +382,10 @@ Solace message broker with the original sent messages.
 */
 func SendPersistentStreaming(sess SESSION, dest string, desttype uint32, buffer unsafe.Pointer, buflen int, corrptr unsafe.Pointer, corrlen int) int {
 	cdest := C.CString(dest)
-	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, desttype, buffer, C.int(buflen), corrptr, C.int(corrlen) ) )
+	cuserProps := C.CString("{\"string\": { \"a\": \"1\" }}")
+	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, desttype, buffer, C.int(buflen), corrptr, C.int(corrlen), cuserProps ) )
 	C.free( unsafe.Pointer(cdest) )
+	C.free( unsafe.Pointer(cuserProps) )
 	return rc
 }
 

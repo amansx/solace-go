@@ -89,6 +89,7 @@ struct sol_state
      * User Data state passed back to the application in all callbacks.
      **/
     void* user_data_;
+    
 };
 
 #endif

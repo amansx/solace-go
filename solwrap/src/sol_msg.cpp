@@ -1,3 +1,5 @@
+#include <iostream>
+#include "json.hpp"
 #include "sol_msg.h"
 #include "sol_state.h"
 #include "sol_error.h"
@@ -64,8 +66,7 @@ sol_msg_req_id(solClient_opaqueMsg_pt msg_p)
     solClient_uint64_t reqid = 0;
     int result = -1;
     solClient_returnCode_t rc = SOLCLIENT_OK;
-    if ( (rc = solClient_msg_getCacheRequestId(msg_p, &reqid))
-        	== SOLCLIENT_OK) {
+    if ( (rc = solClient_msg_getCacheRequestId(msg_p, &reqid)) == SOLCLIENT_OK) {
         result = (int) reqid;
     }
     return result;
@@ -74,20 +75,19 @@ sol_msg_req_id(solClient_opaqueMsg_pt msg_p)
 void
 populate_common_fields(sol_state* state, message_event* recvmsg, solClient_opaqueMsg_pt msg_p)
 {
-    solClient_returnCode_t rc = SOLCLIENT_OK;
-    recvmsg->discard_flag     = sol_msg_discard_flag( msg_p );
-    recvmsg->redelivered_flag = sol_msg_redelivered_flag( msg_p );
-    recvmsg->req_id           = sol_msg_req_id( msg_p );
-    recvmsg->user_data        = state->user_data_;
 
-    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg))
-        	!= SOLCLIENT_OK) {
+    solClient_returnCode_t rc = SOLCLIENT_OK;
+
+    recvmsg->req_id               = sol_msg_req_id( msg_p );
+    recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
+    recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
+    recvmsg->user_data            = state->user_data_;
+
+    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
-    
-    if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, 
-        		&(state->recvdest_), recvmsg))
-        	!= SOLCLIENT_OK) {
+
+    if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, &(state->recvdest_), recvmsg)) != SOLCLIENT_OK) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getDestination()" );
     }
 }
@@ -102,7 +102,60 @@ on_msg_cb(solClient_opaqueSession_pt sess_p,
 
     recvmsg->flow = 0;
     recvmsg->id = 0;
-    populate_common_fields( state, recvmsg, msg_p );
+
+    // ======================================
+    // Populate Fields
+    // ======================================
+
+    solClient_returnCode_t rc = SOLCLIENT_OK;
+
+    solClient_opaqueContainer_pt ptr;
+    if ((rc = solClient_msg_getUserPropertyMap(msg_p, &ptr)) != SOLCLIENT_OK) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_getUserPropertyMap()" );
+    }
+
+    nlohmann::json json;
+    while (solClient_container_hasNextField(ptr)) {
+        solClient_field_t field;
+        const char *name_p = NULL;
+
+        if ((rc = solClient_container_getNextField (ptr, &field, sizeof(solClient_field_t), &name_p)) != SOLCLIENT_OK) {
+            on_error( (SOLHANDLE)state, rc, "solClient_msg_getUserPropertyMap()" );
+        }
+
+        if (field.type == SOLCLIENT_BOOL) {
+            json["bool"][name_p] = field.value.boolean;
+        } else if (field.type == SOLCLIENT_INT64) {
+            json["int64"][name_p] = field.value.int64;
+        } else if (field.type == SOLCLIENT_STRING) {
+            json["string"][name_p] = field.value.string;
+        } else {
+            on_error( (SOLHANDLE)state, rc, "unknown type" );
+        }
+
+    }
+
+    const std::string user_properties_payload = json.dump();
+
+    recvmsg->req_id               = sol_msg_req_id( msg_p );
+    recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
+    recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
+
+    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
+    }
+
+    if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, &(state->recvdest_), recvmsg)) != SOLCLIENT_OK) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_getDestination()" );
+    }
+
+    recvmsg->user_properties      = user_properties_payload.c_str();
+    recvmsg->user_data            = state->user_data_;
+
+    // ======================================
+    // END Populate Fields
+    // ======================================
+
 
     if (state->msg_cb_ != 0) {
 #ifdef PYTHON_SUPPORT

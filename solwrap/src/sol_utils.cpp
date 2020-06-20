@@ -5,8 +5,10 @@
 #include "sol_sessevent.h"
 #include "sol_error.h"
 
+#include "json.hpp"
 #include "solclient/solClient.h"
 
+#include <iostream>
 #include <cstring>
 
 SOLHANDLE
@@ -171,26 +173,24 @@ sol_disconnect(SOLHANDLE handle)
 }
 
 int 
-sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen)
+sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, const char* user_properties)
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
 
-    // set the payload
     solClient_msg_setBinaryAttachmentPtr( state->sendmsg_, buffer, buflen );
 
     // Set direct mode for the message
-    if( (rc = solClient_msg_setDeliveryMode(state->sendmsg_, SOLCLIENT_SEND_FLAGS_DIRECT))
-            != SOLCLIENT_OK ) {
+    if( (rc = solClient_msg_setDeliveryMode ( state->sendmsg_, SOLCLIENT_SEND_FLAGS_DIRECT ) ) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDeliveryMode()" );
         return rc;
     }
+
     // Set the dest
     solClient_destination_t dest;
     dest.destType = SOLCLIENT_TOPIC_DESTINATION;
     dest.dest     = topic;
-    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t)))
-            != SOLCLIENT_OK ) {
+    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDestination()" );
         return rc;
     }
@@ -202,10 +202,27 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen)
     return rc;
 }
 
-int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_type desttype, void* buffer, int buflen, void* correlation_p, int corrlen)
+int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_type desttype, void* buffer, int buflen, void* correlation_p, int corrlen, const char* user_properties)
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
+
+    solClient_opaqueContainer_pt userPropContainer = NULL;
+    if ( ( rc = solClient_msg_createUserPropertyMap ( state->sendmsg_, &userPropContainer, 1024 ) ) != SOLCLIENT_OK ) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_createUserPropertyMap()" );
+        return rc;
+    }
+
+    auto props = nlohmann::json::parse(user_properties);
+    const nlohmann::json &strings = props["string"];
+    for (auto& element : nlohmann::json::iterator_wrapper(strings)) {
+        const std::string key   = element.key();
+        const std::string value = element.value();
+        if ( ( rc = solClient_container_addString ( userPropContainer, value.c_str(), key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addString()" );
+            return rc;
+        }
+    }
 
     // set the payload
     solClient_msg_setBinaryAttachmentPtr( state->sendmsg_, buffer, buflen );

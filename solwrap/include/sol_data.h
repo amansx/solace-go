@@ -100,13 +100,12 @@ extern "C" {
         int            redelivered_flag;
         int            discard_flag;
         void*          user_data;
+        const char*    user_properties;
     } message_event;
     /**
     * Message Callback function profile.
     **/
     typedef void (*message_cb)(SOLHANDLE handle, message_event*);
-
-
 
 
     /**

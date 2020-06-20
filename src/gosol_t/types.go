@@ -55,6 +55,7 @@ type MessageEvent struct {
 	RequestID          int
 	Redelivered        bool
 	Discard            bool
+	UserProperties     string
 }
 
 type MessageHandler func(MessageEvent)

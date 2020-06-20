@@ -92,7 +92,7 @@ int main(int c, char** a)
 
     sol_subscribe_topic( subhandle, "warm/up/topic" );
     for( int wu=0; wu < 1000; ++wu) {
-        sol_send_direct( subhandle, "warm/up/topic", (void*)"0000", 5 );
+        sol_send_direct( subhandle, "warm/up/topic", (void*)"0000", 5, "");
     }
     sol_unsubscribe_topic( subhandle, "warm/up/topic" );
 

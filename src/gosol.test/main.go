@@ -6,6 +6,8 @@ import "gosol_t";
 
 func onMessage(e gosol_t.MessageEvent) {
 	fmt.Printf("%+v\n", e)
+	fmt.Println(string(e.Buffer))
+	fmt.Println(e.UserProperties)
 }
 
 func onError(e gosol_t.ErrorEvent) {
@@ -28,9 +30,12 @@ func main() {
 				solace := initSolace(onMessage, onError, onConnectionEvent, onPublisherEvent)
 
 				solace.Connect("host.docker.internal:55555", "default", "default", "", "1")
+				
 				solace.Subscribe("aman")
 				solace.Publish("aman", []byte("Hello World"))
+				
 				solace.Unsubscribe("aman")
+				solace.Disconnect()
 
 				return
 

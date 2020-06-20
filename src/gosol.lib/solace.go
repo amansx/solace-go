@@ -5,6 +5,8 @@ import "unsafe"
 import "gosol"
 import "gosol_t"
 
+var singleton *Solace
+
 type Solace struct {
 	sess gosol.SESSION
 }
@@ -87,4 +89,13 @@ func (this Solace) UnbindQueue(queueName string) {
 
 func (this Solace) Ack(flow uint64, msgID uint64) {
 	gosol.AckMsg(this.sess, flow, msgID)
+}
+
+
+func GoSolace(onMessage gosol_t.MessageHandler, onError gosol_t.ErrorHandler, onConnection gosol_t.ConnectionEventHandler, onPublisherEvent gosol_t.PublisherEventHandler) gosol_t.Solace {
+	if (singleton == nil) {
+		singleton = &Solace{}
+		singleton.Init(onMessage, onError, onConnection, onPublisherEvent)
+	}
+	return singleton
 }
