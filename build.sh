@@ -9,11 +9,11 @@ go version
 echo "=============================="
 
 mkdir -p lib
-mkdir -p test
-mkdir -p bin && rm ./bin/*
+mkdir -p bin
+
+find bin/* -print0  | xargs -0  rm -rf
+find lib/* -print0  | xargs -0  rm -rf
 
 make lib
-make lib-tests
 make binding
-make binding-tests
-make test-binding
+make example

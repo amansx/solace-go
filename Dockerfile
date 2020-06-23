@@ -13,9 +13,9 @@ RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscript
 	gvm install go1.14.4 -B
 
 WORKDIR /root/solace
-COPY solclient/ /root/solace/solclient/
-COPY solwrap/ /root/solace/solwrap/
-COPY src/ /root/solace/src/
+
+COPY includes/ /root/solace/includes/
+COPY *.go /root/solace/
 COPY Makefile /root/solace/Makefile
 COPY build.sh /root/solace/build.sh
 

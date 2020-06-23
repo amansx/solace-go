@@ -1,11 +1,11 @@
 LIBNAME        = solwrap
 SONAME         = lib$(LIBNAME).so
 
-SOLWRAP_DIR    = $(CURDIR)/solwrap
-SOLCLIENT_DIR  = $(CURDIR)/solclient
+SOLWRAP_DIR    = $(CURDIR)/includes/solwrap
+SOLCLIENT_DIR  = $(CURDIR)/includes/solclient
 
+LIB_DIR        = $(CURDIR)/lib
 BUILD_DIR      = $(CURDIR)/bin
-TEST_DIR       = $(CURDIR)/test
 
 PYINC=
 PYLIB=
@@ -20,10 +20,9 @@ WRAP_GO_LIBS         = pthread rt stdc++
 SYMS                 = PROVIDE_LOG_UTILITIES SOLCLIENT_CONST_PROPERTIES _REENTRANT _LINUX_X86_64
 DEBUG                = -g
 
-SOL_SRC     = $(wildcard $(CURDIR)/solwrap/src/*.cpp)
+SOL_SRC     = $(wildcard $(SOLWRAP_DIR)/src/*.cpp)
 SOL_TEST    = $(wildcard ./bin/*.test)
 
-# -Wl,--whole-archive libAlgatorc.a -Wl,--no-whole-archive
 CXXFLAGS_LIB = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
 CXXFLAGS     = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
 
@@ -31,30 +30,30 @@ WRAPPER_LIBS      = $(foreach l, $(WRAP_LIBS), -l$l)
 WRAPPER_GO_LIBS   = $(foreach l, $(WRAP_GO_LIBS), -l$l)
 WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
 
-# RUN_TESTS    = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && LD_LIBRARY_PATH=./bin/ ./$(b) ./src/solace.properties &&) printf "==========\n"
 RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && ./$(b) &&) printf "==========\n"
 
 lib: $(SONAME)
 
 $(SONAME): $(SOL_SRC)
-	cd lib &&\
+	cd $(LIB_DIR) &&\
 		$(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC &&\
 		ar -rcs libsolwrap.a *.o &&\
 		rm *.o
 
 lib-tests:
-# 	$(CC)  $(CXXFLAGS) -o $(TEST_DIR)/c_client.test   $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
-# 	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/cache.test     $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
-	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/direct.test     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
-	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/persistent.test $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
-	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/subscribe.test  $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test   $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/cache.test     $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/persistent.test $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/subscribe.test  $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+
+test:
+	$(RUN_TESTS)
 
 binding:
-	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="$(CXXFLAGS)" go install gosol
-	GOPATH=$(CURDIR) CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -buildmode=plugin -o $(BUILD_DIR)/solace.goplugin src/gosol.lib/*.go
+	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -tags "core" -buildmode=plugin -o $(LIB_DIR)/solace.linux.amd64.gopl
+	cp $(LIB_DIR)/solace.linux.amd64.gopl $(BUILD_DIR)/
 
-binding-tests:
-	GOPATH=$(CURDIR) go install gosol.test
-
-test-binding:
-	$(RUN_TESTS)
+example:
+	go build -o $(BUILD_DIR)/publisher publisher_example.go
+	go build -o $(BUILD_DIR)/subscriber subscriber_example.go
