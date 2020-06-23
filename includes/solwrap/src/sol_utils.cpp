@@ -114,10 +114,7 @@ sol_connect(SOLHANDLE handle, const char* propsfile)
     ss_fn_info.rxMsgInfo.user_p     = state;
 
     solClient_log(SOLCLIENT_LOG_INFO, "creating solClient session" );
-    if( (rc = solClient_session_create(state->props_, state->ctx_, &(state->sess_), 
-                                       &ss_fn_info,
-                                       sizeof(solClient_session_createFuncInfo_t)))
-           != SOLCLIENT_OK ) {
+    if( (rc = solClient_session_create(state->props_, state->ctx_, &(state->sess_), &ss_fn_info, sizeof(solClient_session_createFuncInfo_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_session_create()" );
     }
 
@@ -137,18 +134,15 @@ sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, con
 
     state->props_ = read_prop_params(host, vpn, user, pass, windowsize);
 
-    solClient_session_createFuncInfo_t ss_fn_info = 
-                                SOLCLIENT_SESSION_CREATEFUNC_INITIALIZER;
+    solClient_session_createFuncInfo_t ss_fn_info =  SOLCLIENT_SESSION_CREATEFUNC_INITIALIZER;
+    
     ss_fn_info.eventInfo.callback_p = on_event_cb;
     ss_fn_info.eventInfo.user_p     = state;
     ss_fn_info.rxMsgInfo.callback_p = on_msg_cb;
     ss_fn_info.rxMsgInfo.user_p     = state;
 
     solClient_log(SOLCLIENT_LOG_INFO, "creating solClient session" );
-    if( (rc = solClient_session_create(state->props_, state->ctx_, &(state->sess_), 
-                                       &ss_fn_info,
-                                       sizeof(solClient_session_createFuncInfo_t)))
-           != SOLCLIENT_OK ) {
+    if( (rc = solClient_session_create(state->props_, state->ctx_, &(state->sess_), &ss_fn_info, sizeof(solClient_session_createFuncInfo_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_session_create()" );
     }
 
@@ -170,6 +164,7 @@ sol_disconnect(SOLHANDLE handle)
         on_error( (SOLHANDLE)state, rc, "solClient_session_disconnect()" );
     if ( (rc = solClient_session_destroy(&(state->sess_))) != SOLCLIENT_OK ) 
         on_error( (SOLHANDLE)state, rc, "solClient_session_destroy()" );
+    
     state->sess_ = 0;
 
     return rc;
@@ -311,8 +306,7 @@ int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_typ
     solClient_msg_setBinaryAttachmentPtr( state->sendmsg_, buffer, buflen );
 
     // Set persistent mode for the message
-    if( (rc = solClient_msg_setDeliveryMode(state->sendmsg_, SOLCLIENT_SEND_FLAGS_PERSISTENT))
-            != SOLCLIENT_OK ) {
+    if( (rc = solClient_msg_setDeliveryMode(state->sendmsg_, SOLCLIENT_SEND_FLAGS_PERSISTENT)) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDeliveryMode()" );
         return rc;
     }
@@ -323,14 +317,14 @@ int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_typ
     else
     	dest.destType = SOLCLIENT_TOPIC_DESTINATION;
     dest.dest = destination;
-    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t)))
-            != SOLCLIENT_OK ) {
+    
+    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDestination()" );
         return rc;
     }
+    
     // Set the correlation ptr
-    if ( (rc = solClient_msg_setCorrelationTagPtr(state->sendmsg_, correlation_p, corrlen)) 
-            != SOLCLIENT_OK ) {
+    if ( (rc = solClient_msg_setCorrelationTagPtr(state->sendmsg_, correlation_p, corrlen)) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setCorrelationTagPtr()" );
         return rc;
     }
@@ -348,16 +342,14 @@ int
 sol_subscribe_topic(SOLHANDLE handle, const char* topic)
 {
     sol_state* state = (sol_state*)handle;
-    return solClient_session_topicSubscribeExt(state->sess_, 
-                            SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM, topic);
+    return solClient_session_topicSubscribeExt(state->sess_, SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM, topic);
 }
 
 int 
 sol_unsubscribe_topic(SOLHANDLE handle, const char* topic)
 {
     sol_state* state = (sol_state*)handle;
-    return solClient_session_topicUnsubscribeExt(state->sess_, 
-                            SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM, topic);
+    return solClient_session_topicUnsubscribeExt(state->sess_, SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM, topic);
 }
 
 
@@ -366,24 +358,31 @@ void setup_flow_props(sol_flow_state* fstate, const char* queue, fwd_mode fm, ac
     memcpy( (fstate->qname), queue, strlen(queue)+1 );
     // Flow properties object
     int p = 0;
+
     fstate->flp[p++] = SOLCLIENT_FLOW_PROP_BIND_NAME;          fstate->flp[p++] = queue;
+
     fstate->flp[p++] = SOLCLIENT_FLOW_PROP_BIND_ENTITY_ID;     fstate->flp[p++] = SOLCLIENT_FLOW_PROP_BIND_ENTITY_QUEUE;
+
     fstate->flp[p++] = SOLCLIENT_FLOW_PROP_BIND_BLOCKING;      fstate->flp[p++] = SOLCLIENT_PROP_ENABLE_VAL;
+    
     if (am == MANUAL_ACK) {
         fstate->flp[p++] = SOLCLIENT_FLOW_PROP_ACKMODE;        fstate->flp[p++] = SOLCLIENT_FLOW_PROP_ACKMODE_CLIENT;
+    } else {
+        fstate->flp[p++] = SOLCLIENT_FLOW_PROP_ACKMODE;        fstate->flp[p++] = SOLCLIENT_FLOW_PROP_ACKMODE_AUTO;
     }
-    else {
-        fstate->flp[p++] =SOLCLIENT_FLOW_PROP_ACKMODE;         fstate->flp[p++] = SOLCLIENT_FLOW_PROP_ACKMODE_AUTO;
-    }
+    
     // Disable to begin in the stopped state (e.g. if adding multiple flows)
     fstate->flp[p++] =SOLCLIENT_FLOW_PROP_START_STATE;         fstate->flp[p++] = SOLCLIENT_PROP_ENABLE_VAL;
+    
     if (fm == CUT_THRU) {
         fstate->flp[p++] =SOLCLIENT_FLOW_PROP_FORWARDING_MODE; fstate->flp[p++] = SOLCLIENT_FLOW_PROP_FORWARDING_MODE_CUT_THROUGH;
     }
     else {
         fstate->flp[p++] =SOLCLIENT_FLOW_PROP_FORWARDING_MODE; fstate->flp[p++] = SOLCLIENT_FLOW_PROP_FORWARDING_MODE_STORE_AND_FORWARD;
     }
-    fstate->flp[p++] =SOLCLIENT_FLOW_PROP_WINDOWSIZE;          fstate->flp[p++] = "255";
+    
+    fstate->flp[p++] = SOLCLIENT_FLOW_PROP_WINDOWSIZE;         fstate->flp[p++] = "255";
+    
     fstate->flp[p] = 0;
 }
 
@@ -394,8 +393,7 @@ sol_bind_queue(SOLHANDLE handle, const char* queue, fwd_mode fm, ack_mode am)
 
     sol_state* state = (sol_state*)handle;
 
-    solClient_flow_createFuncInfo_t flw_fn_info = 
-                                        SOLCLIENT_FLOW_CREATEFUNC_INITIALIZER;
+    solClient_flow_createFuncInfo_t flw_fn_info = SOLCLIENT_FLOW_CREATEFUNC_INITIALIZER;
     flw_fn_info.rxMsgInfo.callback_p = on_flow_msg_cb;
     flw_fn_info.rxMsgInfo.user_p     = state;
     flw_fn_info.eventInfo.callback_p = on_flow_event_cb;
@@ -405,11 +403,10 @@ sol_bind_queue(SOLHANDLE handle, const char* queue, fwd_mode fm, ack_mode am)
     setup_flow_props( fstate, queue, fm, am );
 
     // Create the flow
-    if ( (rc = solClient_session_createFlow(fstate->flp, state->sess_, &(fstate->flow), 
-                                           &flw_fn_info, sizeof(flw_fn_info))) 
-            != SOLCLIENT_OK ) {
+    if ( (rc = solClient_session_createFlow(fstate->flp, state->sess_, &(fstate->flow), &flw_fn_info, sizeof(flw_fn_info))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_session_createFlow()" );
     }
+    
     if ( (rc = solClient_flow_start(fstate->flow)) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_flow_start()" );
     }

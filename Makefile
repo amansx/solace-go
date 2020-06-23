@@ -55,5 +55,5 @@ binding:
 	cp $(LIB_DIR)/solace.linux.amd64.gopl $(BUILD_DIR)/
 
 example:
-	go build -o $(BUILD_DIR)/publisher publisher_example.go
-	go build -o $(BUILD_DIR)/subscriber subscriber_example.go
+	go build -o $(BUILD_DIR)/publisher publisher.example.go
+	go build -o $(BUILD_DIR)/subscriber subscriber.example.go
