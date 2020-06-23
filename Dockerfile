@@ -14,10 +14,12 @@ RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscript
 
 WORKDIR /root/solace
 
-COPY includes/ /root/solace/includes/
-COPY *.go /root/solace/
+COPY *.go  /root/solace/
+COPY *.mod /root/solace/
 COPY Makefile /root/solace/Makefile
 COPY build.sh /root/solace/build.sh
+COPY includes/ /root/solace/includes/
+COPY internal/ /root/solace/internal/
 
 RUN source /root/.gvm/scripts/gvm && gvm use go1.14.4 --default
 

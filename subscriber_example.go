@@ -54,15 +54,13 @@ func main() {
 					go func(){
 						s := (*initSolace)(onMessage, onError, onConnectionEvent, onPublisherEvent)
 						s.Connect("host.docker.internal:55555", "default", "default", "", "1")
-						s.Publish(
-							solace.DESTINATION_TYPE_QUEUE, 
-							queueName, 
-							[]byte("Hello World"), 
+						s.Publish(solace.DESTINATION_TYPE_QUEUE, queueName, []byte("Hello World"), 
 							map[string]interface{}{ 
 								"aman": 12, 
 								"abc": true, 
-								"yada": "aman"
-							})
+								"yada": "aman",
+							},
+						)
 						// s.UnsubscribeQueue(queueName)
 						// s.Disconnect()
 					}()
