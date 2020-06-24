@@ -1,4 +1,3 @@
 .DS_Store
 solace-pubsub-standard-9.5.0.30-docker.tar.gz
 bin/
-lib/
