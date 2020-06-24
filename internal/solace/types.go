@@ -99,12 +99,20 @@ message-event received, for either Guaranteed or Direct transports
 */
 type MessageEvent struct {
 	Session            uint64
+
 	DestinationType    string
 	Destination        string
+
+	ReplyToDestinationType    string
+	ReplyToDestination        string
+
 	Flow               uint64
 	MessageID          uint64
+
+	MessageType        string
 	Buffer             []byte
 	BufferLen          uint
+
 	RequestID          int
 	Redelivered        bool
 	Discard            bool
@@ -128,7 +136,7 @@ type ISolace interface {
 	Subscribe(topic string)
 	Unsubscribe(topic string)
 	
-	Publish(destinationType DESTINATION_TYPE, target string, payload []byte, userProperties map[string]interface{})
+	Publish(destinationType DESTINATION_TYPE, target string, replyToDestType DESTINATION_TYPE, replyTo string, messageType string, payload []byte, userProperties map[string]interface{}, corelationID int)
 	
 	SubscribeQueue(queueName string, mode ACK_MODE)
 	UnsubscribeQueue(queueName string)

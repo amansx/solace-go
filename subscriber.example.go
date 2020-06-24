@@ -20,7 +20,7 @@ func pluginPath(pluginName string) string {
 }
 
 func onMessage(e solace.MessageEvent) {
-	fmt.Printf("--%+v\n", e)
+	fmt.Printf("%+v\n", e)
 	fmt.Println(string(e.Buffer))
 	fmt.Println(e.UserProperties)
 }

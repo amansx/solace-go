@@ -90,17 +90,27 @@ extern "C" {
     **/
     typedef struct message_event 
     {
+
         enum dest_type desttype;
         const char*    destination;
+
+        enum dest_type replyToDestType;
+        const char*    replyTo;
+        
         FLOWHANDLE     flow;
         SOLMSGID       id;
+
+        const char*    application_message_type;
         void*          buffer;
         unsigned int   buflen;
+        
         int            req_id;
         int            redelivered_flag;
         int            discard_flag;
+
         void*          user_data;
         const char*    user_properties;
+
     } message_event;
     /**
     * Message Callback function profile.

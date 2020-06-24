@@ -187,7 +187,7 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, c
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
-   
+
     // ================================
     // Parse User Properties
     // ================================
@@ -242,6 +242,7 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, c
     solClient_destination_t dest;
     dest.destType = SOLCLIENT_TOPIC_DESTINATION;
     dest.dest     = topic;
+
     if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDestination()" );
         return rc;
@@ -256,8 +257,26 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, c
     return rc;
 }
 
-int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_type desttype, void* buffer, int buflen, void* correlation_p, int corrlen, const char* user_properties)
-{
+int sol_send_persistent(
+    SOLHANDLE handle,
+    
+    const char* destination, 
+    enum dest_type desttype, 
+
+    const char* replyTo, 
+    enum dest_type replyToType, 
+
+    const char* messageType,
+
+    void* buffer, 
+    int buflen, 
+
+    const char* user_properties,
+
+    void* correlation_p, 
+    int corrlen
+
+) {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
 
@@ -281,6 +300,42 @@ int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_typ
         }
     }
 
+    for (auto it = props["bool"].begin(); it != props["bool"].end(); ++it) {
+        const std::string key        = it.key();
+        const solClient_bool_t value = it.value();
+        if ( ( rc = solClient_container_addBoolean ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addBoolean()" );
+            return rc;
+        }
+    }
+
+    for (auto it = props["int8"].begin(); it != props["int8"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int8_t value = it.value();
+        if ( ( rc = solClient_container_addInt8 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+
+    for (auto it = props["int16"].begin(); it != props["int16"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int16_t value = it.value();
+        if ( ( rc = solClient_container_addInt16 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+    
+    for (auto it = props["int32"].begin(); it != props["int32"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int32_t value = it.value();
+        if ( ( rc = solClient_container_addInt32 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+    
     for (auto it = props["int64"].begin(); it != props["int64"].end(); ++it) {
         const std::string key          = it.key();
         const solClient_int64_t value = it.value();
@@ -290,14 +345,6 @@ int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_typ
         }
     }
 
-    for (auto it = props["bool"].begin(); it != props["bool"].end(); ++it) {
-        const std::string key        = it.key();
-        const solClient_bool_t value = it.value();
-        if ( ( rc = solClient_container_addBoolean ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
-            on_error( (SOLHANDLE)state, rc, "solClient_container_addBoolean()" );
-            return rc;
-        }
-    }
     // ================================
     // Parse User Properties
     // ================================
@@ -311,18 +358,35 @@ int sol_send_persistent(SOLHANDLE handle, const char* destination, enum dest_typ
         return rc;
     }
     // Set the dest
-    solClient_destination_t dest;
-    if (desttype == QUEUE) 
-    	dest.destType = SOLCLIENT_QUEUE_DESTINATION;
-    else
-    	dest.destType = SOLCLIENT_TOPIC_DESTINATION;
-    dest.dest = destination;
+    solClient_destination_t dest; dest.dest = destination;
+    if (desttype == QUEUE) {
+        dest.destType = SOLCLIENT_QUEUE_DESTINATION;
+    } else {
+        dest.destType = SOLCLIENT_TOPIC_DESTINATION;
+    }
     
-    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t))) != SOLCLIENT_OK ) {
+    solClient_destination_t rto; rto.dest  = replyTo;
+    if (replyToType == QUEUE) {
+        rto.destType = SOLCLIENT_QUEUE_DESTINATION;
+    } else {
+        rto.destType = SOLCLIENT_TOPIC_DESTINATION;
+    }
+
+    if ( ( rc = solClient_msg_setApplicationMsgType (state->sendmsg_, messageType )) != SOLCLIENT_OK ) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_setApplicationMsgType()" );
+        return rc;
+    }
+
+    if( (rc = solClient_msg_setDestination(state->sendmsg_, &dest, sizeof(solClient_destination_t) )) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setDestination()" );
         return rc;
     }
     
+    if ( ( rc = solClient_msg_setReplyTo (state->sendmsg_, &rto, sizeof(solClient_destination_t) )) != SOLCLIENT_OK ) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_setReplyTo()" );
+        return rc;
+    }
+
     // Set the correlation ptr
     if ( (rc = solClient_msg_setCorrelationTagPtr(state->sendmsg_, correlation_p, corrlen)) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setCorrelationTagPtr()" );

@@ -26,9 +26,7 @@ sol_msg_discard_flag(solClient_opaqueMsg_pt msg_p)
 }
 
 int 
-sol_msg_destination(solClient_opaqueMsg_pt msg_p, 
-        			solClient_destination_t* dest, 
-        			message_event* msg)
+sol_msg_destination(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, message_event* msg)
 {
     solClient_returnCode_t rc = solClient_msg_getDestination( msg_p, dest, sizeof(solClient_destination_t) );
     if ( rc == SOLCLIENT_OK ) {
@@ -44,6 +42,27 @@ sol_msg_destination(solClient_opaqueMsg_pt msg_p,
     else {
         msg->destination = 0;
         msg->desttype = NONE;
+    }
+    return rc;
+}
+
+int 
+sol_msg_replyto(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, message_event* msg)
+{
+    solClient_returnCode_t rc = solClient_msg_getReplyTo( msg_p, dest, sizeof(solClient_destination_t) );
+    if ( rc == SOLCLIENT_OK ) {
+        if (dest->destType == SOLCLIENT_TOPIC_DESTINATION) {
+            msg->replyTo = dest->dest;
+            msg->replyToDestType = TOPIC;
+        }
+        else if (dest->destType == SOLCLIENT_QUEUE_DESTINATION) {
+            msg->replyTo = dest->dest;
+            msg->replyToDestType = QUEUE;
+        }
+    }
+    else {
+        msg->replyTo = 0;
+        msg->replyToDestType = NONE;
     }
     return rc;
 }
@@ -72,30 +91,9 @@ sol_msg_req_id(solClient_opaqueMsg_pt msg_p)
     return result;
 }
 
-void
-populate_common_fields(sol_state* state, message_event* recvmsg, solClient_opaqueMsg_pt msg_p)
-{
-
-    solClient_returnCode_t rc = SOLCLIENT_OK;
-
-    recvmsg->req_id               = sol_msg_req_id( msg_p );
-    recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
-    recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
-    recvmsg->user_data            = state->user_data_;
-
-    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
-    }
-
-    if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, &(state->recvdest_), recvmsg)) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "solClient_msg_getDestination()" );
-    }
-}
 
 solClient_rxMsgCallback_returnCode_t 
-on_msg_cb(solClient_opaqueSession_pt sess_p, 
-          solClient_opaqueMsg_pt msg_p, 
-          void *user_p)
+on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void *user_p)
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
 
@@ -141,12 +139,15 @@ on_msg_cb(solClient_opaqueSession_pt sess_p,
     recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
     recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
 
+    solClient_msg_getApplicationMsgType( msg_p, &(recvmsg->application_message_type) );
+    sol_msg_replyto( msg_p, &(state->replytodest_), recvmsg );
+
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
 
-    if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, &(state->recvdest_), recvmsg)) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "solClient_msg_getDestination()" );
+    if ( (rc = (solClient_returnCode_t) sol_msg_destination ( msg_p, &(state->recvdest_), recvmsg )) != SOLCLIENT_OK) {
+        on_error( (SOLHANDLE)state, rc, "sol_msg_destination()" );
     }
 
     recvmsg->user_properties      = user_properties_payload.c_str();
@@ -179,8 +180,8 @@ on_flow_msg_cb(solClient_opaqueFlow_pt opaqueFlow_p, solClient_opaqueMsg_pt msg_
     message_event* recvmsg = &(state->recvmsg_);
     
     recvmsg->flow = (FLOWHANDLE)opaqueFlow_p;
-    if ( (rc = (solClient_returnCode_t) sol_msg_id(msg_p, recvmsg))
-            != SOLCLIENT_OK ) {
+    
+    if ( (rc = (solClient_returnCode_t) sol_msg_id(msg_p, recvmsg)) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getMsgId()" );
     }
     
@@ -221,12 +222,15 @@ on_flow_msg_cb(solClient_opaqueFlow_pt opaqueFlow_p, solClient_opaqueMsg_pt msg_
     recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
     recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
 
+    solClient_msg_getApplicationMsgType( msg_p, &(recvmsg->application_message_type) );
+    sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
+
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
 
     if ( (rc = (solClient_returnCode_t) sol_msg_destination( msg_p, &(state->recvdest_), recvmsg)) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "solClient_msg_getDestination()" );
+        on_error( (SOLHANDLE)state, rc, "sol_msg_destination()" );
     }
 
     recvmsg->user_properties      = user_properties_payload.c_str();

@@ -53,15 +53,50 @@ func (this Solace) Unsubscribe(topic string) {
 	UnsubscribeTopic(this.sess, topic)
 }
 
-func (this Solace) send(destinationType solace.DESTINATION_TYPE, target string, payload []byte, userProperties map[string]interface{}) {
+func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target string, replyToDestType solace.DESTINATION_TYPE, replyTo string, messageType string, payload []byte, userProperties map[string]interface{}, corelationID int) {
 	props := map[string]map[string]interface{}{}
 	for k, v := range userProperties {
 		switch v.(type){
-			case int, int8, int16, int32, int64: 
+			case int8: 
+				if _, ok := props["int8"]; !ok {
+					props["int8"] = map[string]interface{}{}
+				}
+				props["int8"][k] = v.(interface{})
+			case int16: 
+				if _, ok := props["int16"]; !ok {
+					props["int16"] = map[string]interface{}{}
+				}
+				props["int16"][k] = v.(interface{})
+			case int32: 
+				if _, ok := props["int32"]; !ok {
+					props["int32"] = map[string]interface{}{}
+				}
+				props["int32"][k] = v.(interface{})
+			case int, int64: 
 				if _, ok := props["int64"]; !ok {
 					props["int64"] = map[string]interface{}{}
 				}
 				props["int64"][k] = v.(interface{})
+			case uint8: 
+				if _, ok := props["uint8"]; !ok {
+					props["uint8"] = map[string]interface{}{}
+				}
+				props["uint8"][k] = v.(interface{})
+			case uint16: 
+				if _, ok := props["uint16"]; !ok {
+					props["uint16"] = map[string]interface{}{}
+				}
+				props["uint16"][k] = v.(interface{})
+			case uint32: 
+				if _, ok := props["uint32"]; !ok {
+					props["uint32"] = map[string]interface{}{}
+				}
+				props["uint32"][k] = v.(interface{})
+			case uint64:
+				if _, ok := props["uint64"]; !ok {
+					props["uint64"] = map[string]interface{}{}
+				}
+				props["uint64"][k] = v.(interface{})
 			case bool:
 				if _, ok := props["bool"]; !ok {
 					props["bool"] = map[string]interface{}{}
@@ -80,16 +115,35 @@ func (this Solace) send(destinationType solace.DESTINATION_TYPE, target string, 
 	payloadptr := unsafe.Pointer(&payload[0])
 	payloadLen := len(payload)
 	
+
 	if (destinationType == solace.DESTINATION_TYPE_NONE) {
 		SendDirect(this.sess, target, payloadptr, payloadLen, string(propsJson))
+
 	} else {
-		SendPersistent(this.sess, target, destinationType, payloadptr, payloadLen, string(propsJson))
+
+		coordID := C.int(corelationID)
+
+		SendPersistentWithCorelation(
+			this.sess, 
+
+			target, 
+			destinationType, 
+			
+			replyTo,
+			replyToDestType,
+
+			messageType,
+
+			payloadptr, 
+			payloadLen, 
+
+			string(propsJson),
+
+			unsafe.Pointer(&coordID), 
+			int(unsafe.Sizeof(coordID)),
+		)
 	}
 	
-}
-
-func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target string, payload []byte, userProperties map[string]interface{}) {
-	this.send(destinationType, target, payload, userProperties)
 }
 
 /*

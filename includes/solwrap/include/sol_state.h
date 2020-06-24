@@ -60,6 +60,11 @@ struct sol_state
     solClient_destination_t recvdest_;
 
     /**
+     * Cached Solace replyTo object used to extract topic/queue string for delivery to subscription-callbacks.
+     **/
+    solClient_destination_t replytodest_;
+
+    /**
      * Cached Solace message object reused for sending messages to the appliance.
      **/
     solClient_opaqueMsg_pt sendmsg_;

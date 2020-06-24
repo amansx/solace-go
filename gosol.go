@@ -179,16 +179,32 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 
 	if ctx.MsgCB != nil {
 		evt                  := solace.MessageEvent{}
+		
 		evt.Session          = uint64(h)
+		
 		evt.DestinationType  = destinationTypeToString(int(m.desttype))
 		evt.Destination      = C.GoString(m.destination)
+		
+		evt.ReplyToDestinationType = destinationTypeToString(int(m.replyToDestType))
+		evt.ReplyToDestination     = C.GoString(m.replyTo)
+
 		evt.Flow             = uint64(m.flow)
+		
 		evt.MessageID        = uint64(m.id)
+
+		if m.application_message_type != nil {
+			evt.MessageType  = C.GoString(m.application_message_type)
+		} else {
+			evt.MessageType  = "NOT_SET"
+		}
+
 		evt.Buffer           = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
 		evt.BufferLen        = uint(m.buflen)
+		
 		evt.RequestID        = int(m.req_id)
 		evt.Redelivered      = i2b(m.redelivered_flag)
 		evt.Discard          = i2b(m.discard_flag)
+		
 		evt.UserProperties   = C.GoString(m.user_properties)
 
 		// ctx.MsgCB( SESSION(h), evt )
@@ -316,7 +332,9 @@ provided to gosol as a binary data buffer.
 func SendDirect(sess SESSION, topic string, buffer unsafe.Pointer, buflen int, userprops string) int {
 	ctopic     := C.CString(topic)
 	cuserProps := C.CString(userprops)
+	
 	rc     := int( C.sol_send_direct( C.SOLHANDLE(sess), ctopic, buffer, C.int(buflen), cuserProps ) )
+	
 	C.free( unsafe.Pointer(ctopic) )
 	C.free( unsafe.Pointer(cuserProps) )
 	return rc
@@ -328,16 +346,6 @@ established SESSION connection usinng Guaranteed transport. The message
 can be published either to a topic or to a queue, distinguished via the
 desttype parameter (TOPIC | QUEUE).
 */
-func SendPersistent(sess SESSION, dest string, desttype solace.DESTINATION_TYPE, buffer unsafe.Pointer, buflen int, userprops string) int {
-	cdest := C.CString(dest)
-	cuserProps := C.CString(userprops)
-	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, uint32(desttype), buffer, C.int(buflen), nil, 0, cuserProps ) )
-	C.free( unsafe.Pointer(cdest) )
-	C.free( unsafe.Pointer(cuserProps) )
-	return rc
-}
-
-
 /*
 SendPersistentStreaming publishes a message to a Solace message broker
 via ann established SESSION connection usinng Guaranteed transport (see
@@ -347,12 +355,58 @@ returned toe the application via the PubHandler callback function for
 purposes of correlating streaming message acknowledgements from the
 Solace message broker with the original sent messages.
 */
-func SendPersistentStreaming(sess SESSION, dest string, desttype solace.DESTINATION_TYPE, buffer unsafe.Pointer, buflen int, corrptr unsafe.Pointer, corrlen int, userprops string) int {
-	cdest := C.CString(dest)
-	cuserProps := C.CString(userprops)
-	rc    := int( C.sol_send_persistent( C.SOLHANDLE(sess), cdest, uint32(desttype), buffer, C.int(buflen), corrptr, C.int(corrlen), cuserProps ) )
+func SendPersistentWithCorelation(
+	sess SESSION, 
+
+	dest string, 
+	desttype solace.DESTINATION_TYPE, 
+
+	replyTo string, 
+	replyToDestType solace.DESTINATION_TYPE, 
+
+	messageType string,
+
+	buffer unsafe.Pointer, 
+	buflen int, 
+
+	userprops string,
+
+	corrptr unsafe.Pointer, 
+	corrlen int, 
+
+) int {
+
+	cdest        := C.CString(dest)
+	creplyTo     := C.CString(replyTo)
+	cuserProps   := C.CString(userprops)
+	cmessageType := C.CString(messageType)
+
+	rc    := int( C.sol_send_persistent( 
+		C.SOLHANDLE(sess), 
+		
+		cdest, 
+		uint32(desttype), 
+
+		creplyTo, 
+		uint32(replyToDestType), 
+
+		cmessageType, 
+
+		buffer, 
+		C.int(buflen), 
+
+		cuserProps,
+		
+		corrptr, 
+		C.int(corrlen), 		
+	
+	))
+
 	C.free( unsafe.Pointer(cdest) )
+	C.free( unsafe.Pointer(creplyTo) )
 	C.free( unsafe.Pointer(cuserProps) )
+	C.free( unsafe.Pointer(cmessageType) )
+
 	return rc
 }
 

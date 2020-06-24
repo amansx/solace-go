@@ -46,26 +46,42 @@ func main() {
 
 		// Load plugin
 		if so, err := plugin.Open(pluginPath("solace.linux.amd64.gopl")); err == nil {
+
 			// Lookup plugin entry function
 			if gosolace, err := so.Lookup("InitSolaceWithCallback"); err == nil {
-				// Cast Entry function
-				if initSolace, ok := gosolace.(*solace.InitSolaceWithCallback); ok {
 
-					go func(){
+				go func(){
+					// Cast Entry function
+					if initSolace, ok := gosolace.(*solace.InitSolaceWithCallback); ok {
+
 						s := (*initSolace)(onMessage, onError, onConnectionEvent, onPublisherEvent)
 						s.Connect("host.docker.internal:55555", "default", "default", "", "1")
-						s.Publish(solace.DESTINATION_TYPE_QUEUE, queueName, []byte("Hello World"), 
+
+						s.Publish(
+							solace.DESTINATION_TYPE_QUEUE, 
+							queueName, 
+							
+							solace.DESTINATION_TYPE_QUEUE, 
+							queueName, 
+
+							"JSON", 
+
+							[]byte("Hello World"), 
+							
 							map[string]interface{}{ 
 								"aman": 12, 
 								"abc": true, 
 								"yada": "aman",
 							},
+
+							12,
+						
 						)
 						// s.UnsubscribeQueue(queueName)
 						// s.Disconnect()
-					}()
 
-				}
+					}
+				}()
 
 			} else {
 				fmt.Println(err)
