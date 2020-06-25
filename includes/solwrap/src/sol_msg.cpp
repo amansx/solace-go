@@ -140,7 +140,9 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
 
     solClient_msg_getApplicationMsgType( msg_p, &(recvmsg->application_message_type) );
-    sol_msg_replyto( msg_p, &(state->replytodest_), recvmsg );
+    solClient_msg_getCorrelationId( msg_p, &(recvmsg->correlationid) );
+    
+    sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
 
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );

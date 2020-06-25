@@ -300,7 +300,7 @@ int sol_send_persistent(
 
     const char* user_properties,
 
-    const char* correlation_id,
+    const char* correlationid,
 
     void* correlation_p, 
     int corrlen
