@@ -223,6 +223,8 @@ on_flow_msg_cb(solClient_opaqueFlow_pt opaqueFlow_p, solClient_opaqueMsg_pt msg_
     recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
 
     solClient_msg_getApplicationMsgType( msg_p, &(recvmsg->application_message_type) );
+    solClient_msg_getCorrelationId( msg_p, &(recvmsg->correlationid) );
+    
     sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
 
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {

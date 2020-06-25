@@ -113,6 +113,8 @@ type MessageEvent struct {
 	Buffer             []byte
 	BufferLen          uint
 
+	CorrelationID      string
+
 	RequestID          int
 	Redelivered        bool
 	Discard            bool
@@ -136,7 +138,15 @@ type ISolace interface {
 	Subscribe(topic string)
 	Unsubscribe(topic string)
 	
-	Publish(destinationType DESTINATION_TYPE, target string, replyToDestType DESTINATION_TYPE, replyTo string, messageType string, payload []byte, userProperties map[string]interface{}, corelationID int)
+	Publish(
+		destinationType DESTINATION_TYPE, target string, 
+		replyToDestType DESTINATION_TYPE, replyTo string, 
+		messageType string, 
+		payload []byte, 
+		userProperties map[string]interface{}, 
+		correlationID   string,
+		correlationData int,
+	)
 	
 	SubscribeQueue(queueName string, mode ACK_MODE)
 	UnsubscribeQueue(queueName string)

@@ -158,10 +158,3 @@ A non-durable endpoint, also known as a temporary endpoint, has a shorter lifecy
 | 9443                | REST TLS / SSL ('default' VPN; note that each message VPN configured on the Solace PubSub+ software event broker would require its own unique set of REST ports)              | Data |
 | 8741                | High Availability (HA) Mate Link                                                                                                                                              | HA |
 | 8300, 8301, 8302    | HA Configuration Synchronization                                                                                                                                              | HA |
-
-
-## Unknowns
-* Additional Data in Meta? What data?
-* Who creates Queue, Default Queue Name?
-* Acknowledgement mode - auto vs manual?
-* Streaming?

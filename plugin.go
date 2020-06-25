@@ -53,7 +53,15 @@ func (this Solace) Unsubscribe(topic string) {
 	UnsubscribeTopic(this.sess, topic)
 }
 
-func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target string, replyToDestType solace.DESTINATION_TYPE, replyTo string, messageType string, payload []byte, userProperties map[string]interface{}, corelationID int) {
+func (this Solace) Publish(
+	destinationType solace.DESTINATION_TYPE, target string, 
+	replyToDestType solace.DESTINATION_TYPE, replyTo string, 
+	messageType string, 
+	payload []byte, 
+	userProperties map[string]interface{}, 
+	correlationID string,
+	correlationData int,
+) {
 	props := map[string]map[string]interface{}{}
 	for k, v := range userProperties {
 		switch v.(type){
@@ -112,8 +120,13 @@ func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target strin
 
 	propsJson, _ := json.Marshal(props)
 	
-	payloadptr := unsafe.Pointer(&payload[0])
+	var payloadptr unsafe.Pointer
 	payloadLen := len(payload)
+	if payloadLen > 0 {
+		payloadptr = unsafe.Pointer(&payload[0])
+	} else {
+		payloadptr = nil
+	}
 	
 
 	if (destinationType == solace.DESTINATION_TYPE_NONE) {
@@ -121,7 +134,7 @@ func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target strin
 
 	} else {
 
-		coordID := C.int(corelationID)
+		corrdPtr := C.int(correlationData)
 
 		SendPersistentWithCorelation(
 			this.sess, 
@@ -139,8 +152,10 @@ func (this Solace) Publish(destinationType solace.DESTINATION_TYPE, target strin
 
 			string(propsJson),
 
-			unsafe.Pointer(&coordID), 
-			int(unsafe.Sizeof(coordID)),
+			correlationID,
+
+			unsafe.Pointer(&corrdPtr), 
+			int(unsafe.Sizeof(corrdPtr)),
 		)
 	}
 	

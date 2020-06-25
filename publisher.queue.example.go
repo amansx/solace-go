@@ -74,6 +74,8 @@ func main() {
 								"yada": "aman",
 							},
 
+							"12",
+
 							12,
 						
 						)

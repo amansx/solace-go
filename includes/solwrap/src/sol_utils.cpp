@@ -208,15 +208,6 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, c
         }
     }
 
-    for (auto it = props["int64"].begin(); it != props["int64"].end(); ++it) {
-        const std::string key               = it.key();
-        const solClient_uint64_t value = it.value();
-        if ( ( rc = solClient_container_addInt64 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
-            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
-            return rc;
-        }
-    }
-
     for (auto it = props["bool"].begin(); it != props["bool"].end(); ++it) {
         const std::string key             = it.key();
         const solClient_bool_t value = it.value();
@@ -225,6 +216,42 @@ sol_send_direct(SOLHANDLE handle, const char* topic, void* buffer, int buflen, c
             return rc;
         }
     }
+
+    for (auto it = props["int8"].begin(); it != props["int8"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int8_t value = it.value();
+        if ( ( rc = solClient_container_addInt8 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+
+    for (auto it = props["int16"].begin(); it != props["int16"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int16_t value = it.value();
+        if ( ( rc = solClient_container_addInt16 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+    
+    for (auto it = props["int32"].begin(); it != props["int32"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int32_t value = it.value();
+        if ( ( rc = solClient_container_addInt32 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }
+    
+    for (auto it = props["int64"].begin(); it != props["int64"].end(); ++it) {
+        const std::string key          = it.key();
+        const solClient_int64_t value = it.value();
+        if ( ( rc = solClient_container_addInt64 ( userPropContainer, value, key.c_str() ) ) != SOLCLIENT_OK ) {
+            on_error( (SOLHANDLE)state, rc, "solClient_container_addInt64()" );
+            return rc;
+        }
+    }    
     // ================================
     // Parse User Properties
     // ================================
@@ -272,6 +299,8 @@ int sol_send_persistent(
     int buflen, 
 
     const char* user_properties,
+
+    const char* correlation_id,
 
     void* correlation_p, 
     int corrlen
@@ -384,6 +413,11 @@ int sol_send_persistent(
     
     if ( ( rc = solClient_msg_setReplyTo (state->sendmsg_, &rto, sizeof(solClient_destination_t) )) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setReplyTo()" );
+        return rc;
+    }
+
+    if ( ( rc = solClient_msg_setCorrelationId (state->sendmsg_, correlation_id )) != SOLCLIENT_OK ) {
+        on_error( (SOLHANDLE)state, rc, "solClient_msg_setCorrelationId()" );
         return rc;
     }
 

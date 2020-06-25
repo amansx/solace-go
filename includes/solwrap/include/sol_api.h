@@ -35,6 +35,8 @@ extern "C" {
         int buflen, 
 
         const char* user_properties,
+        
+        const char* correlationid,
 
         void* correlation_p, 
         int corrlen

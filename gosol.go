@@ -195,7 +195,7 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)
 		} else {
-			evt.MessageType  = "NOT_SET"
+			evt.MessageType  = ""
 		}
 
 		evt.Buffer           = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
@@ -206,6 +206,8 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.Discard          = i2b(m.discard_flag)
 		
 		evt.UserProperties   = C.GoString(m.user_properties)
+		
+		evt.CorrelationID   = C.GoString(m.correlationid)
 
 		// ctx.MsgCB( SESSION(h), evt )
 		ctx.MsgCB(evt)
@@ -371,15 +373,18 @@ func SendPersistentWithCorelation(
 
 	userprops string,
 
+	correlationid string,
+
 	corrptr unsafe.Pointer, 
 	corrlen int, 
 
 ) int {
 
-	cdest        := C.CString(dest)
-	creplyTo     := C.CString(replyTo)
-	cuserProps   := C.CString(userprops)
-	cmessageType := C.CString(messageType)
+	cdest          := C.CString(dest)
+	creplyTo       := C.CString(replyTo)
+	cuserProps     := C.CString(userprops)
+	cmessageType   := C.CString(messageType)
+	ccorrelationID := C.CString(correlationid)
 
 	rc    := int( C.sol_send_persistent( 
 		C.SOLHANDLE(sess), 
@@ -396,6 +401,8 @@ func SendPersistentWithCorelation(
 		C.int(buflen), 
 
 		cuserProps,
+
+		ccorrelationID, 
 		
 		corrptr, 
 		C.int(corrlen), 		
@@ -406,6 +413,7 @@ func SendPersistentWithCorelation(
 	C.free( unsafe.Pointer(creplyTo) )
 	C.free( unsafe.Pointer(cuserProps) )
 	C.free( unsafe.Pointer(cmessageType) )
+	C.free( unsafe.Pointer(ccorrelationID) )
 
 	return rc
 }

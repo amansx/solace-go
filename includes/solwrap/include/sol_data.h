@@ -108,6 +108,8 @@ extern "C" {
         int            redelivered_flag;
         int            discard_flag;
 
+        const char*    correlationid;
+
         void*          user_data;
         const char*    user_properties;
 
