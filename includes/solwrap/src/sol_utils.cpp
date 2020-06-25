@@ -416,7 +416,7 @@ int sol_send_persistent(
         return rc;
     }
 
-    if ( ( rc = solClient_msg_setCorrelationId (state->sendmsg_, correlation_id )) != SOLCLIENT_OK ) {
+    if ( ( rc = solClient_msg_setCorrelationId (state->sendmsg_, correlationid )) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_setCorrelationId()" );
         return rc;
     }
