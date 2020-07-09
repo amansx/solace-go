@@ -1,4 +1,4 @@
-module solacego
+module github.com/amansx/solace-go
 
 go 1.14
 

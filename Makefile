@@ -32,7 +32,7 @@ WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
 
 RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && ./$(b) &&) printf "==========\n"
 
-lib: $(SONAME)
+all: $(SONAME)
 
 $(SONAME): $(SOL_SRC)
 	cd $(LIB_DIR) &&\
