@@ -1,4 +1,4 @@
-module solace-go
+module solacego
 
 go 1.14
 

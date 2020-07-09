@@ -1,4 +1,4 @@
-package main
+package solacego
 
 import "C"
 import "unsafe"

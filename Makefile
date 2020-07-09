@@ -4,7 +4,7 @@ SONAME         = lib$(LIBNAME).so
 SOLWRAP_DIR    = $(CURDIR)/includes/solwrap
 SOLCLIENT_DIR  = $(CURDIR)/includes/solclient
 
-LIB_DIR        = $(CURDIR)/lib
+LIB_DIR        = $(CURDIR)
 BUILD_DIR      = $(CURDIR)/bin
 
 PYINC=
@@ -12,7 +12,7 @@ PYLIB=
 PYDEF=
 
 INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
-LIBDIRS              = $(CURDIR)/lib $(SOLCLIENT_DIR)/lib
+LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib
 STATIC_LIBS          = $(CURDIR)/lib/libsolwrap.a $(SOLCLIENT_DIR)/lib/libsolclient.a
 WRAP_LIBS            = pthread
 WRAP_BIN_LIBS        = pthread rt
@@ -41,15 +41,15 @@ $(SONAME): $(SOL_SRC)
 		rm *.o
 
 lib-tests:
-# 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test   $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
-# 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/cache.test     $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/persistent.test $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/subscribe.test  $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test   $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/cache.test     $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 
 test:
 	$(RUN_TESTS)
 
-build:
+examples:
 	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -o pub solace.go gosol.go types.go publisher.queue.example.go
 	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -o sub solace.go gosol.go types.go subscriber.queue.example.go

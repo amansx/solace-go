@@ -1,5 +1,8 @@
-package main
+package solacego
 
+// #cgo CFLAGS: -fPIC -m64 -g
+// #cgo amd64 386 CFLAGS: -I ./ -I ./includes/solclient/lib -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -D_REENTRANT -D_LINUX_X86_64
+// #cgo LDFLAGS: -lpthread -lrt -lstdc++
 // #include "sol_api.h"
 // #include <stdlib.h>
 //
