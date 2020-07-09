@@ -1,4 +1,5 @@
-github.com/amansx/solace-go v0.0.0-20200709103540-e4e8c79e7d30 h1:y57jysTIhMc8Wdj0Ir2bXOOCVYCAAMpCeBBLlobt+LA=
 github.com/amansx/solace-go v0.0.0-20200709103540-e4e8c79e7d30/go.mod h1:GytTKT6h+v0uX0WgQ5TeyWxK4NU9PemP/RvS+RVUPb8=
+github.com/amansx/solace-go v0.0.0-20200709115612-68374d2e2c1b h1:yBYTuTYp2udzgso11VdbGOMiAEHaKVUXPquQ5MNUKMk=
+github.com/amansx/solace-go v0.0.0-20200709115612-68374d2e2c1b/go.mod h1:kXHYu9OQ2MCZSzCI8ia9qKzM+GMMqIWJsQDgHewpkh0=
 github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f h1:QTRRO+ozoYgT3CQRIzNVYJRU3DB8HRnkZv6mr4ISmMA=
 github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f/go.mod h1:2zXcozF6qYGgmsG+SeTZz3oAbFLdD3OWqnUbNvJZAlc=

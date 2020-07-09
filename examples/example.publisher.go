@@ -27,8 +27,8 @@ func main() {
 		fmt.Println(id)
 
 		s.Publish(
-			DESTINATION_TYPE_NONE, queueName, 
-			DESTINATION_TYPE_QUEUE, queueName, 
+			solace.DESTINATION_TYPE_NONE, queueName, 
+			solace.DESTINATION_TYPE_QUEUE, queueName, 
 			"JSON", 
 			b,
 			map[string]interface{}{ 
