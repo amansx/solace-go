@@ -1,4 +1,4 @@
-package solacego
+package solace
 
 import "unsafe"
 

@@ -1,5 +1,5 @@
-module github.com/amansx/solace-go
+module github.amansx/solace-go
 
 go 1.14
 
-require github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f // indirect
+require github.com/mattn/go-pointer v0.0.0-20190911064623-a0a44394634f

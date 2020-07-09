@@ -4,7 +4,7 @@ SONAME         = lib$(LIBNAME).so
 SOLWRAP_DIR    = $(CURDIR)/includes/solwrap
 SOLCLIENT_DIR  = $(CURDIR)/includes/solclient
 
-LIB_DIR        = $(CURDIR)
+LIB_DIR        = $(CURDIR)/lib
 BUILD_DIR      = $(CURDIR)/bin
 
 PYINC=
@@ -35,10 +35,9 @@ RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" &
 all: $(SONAME)
 
 $(SONAME): $(SOL_SRC)
-	cd $(LIB_DIR) &&\
-		$(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC &&\
-		ar -rcs libsolwrap.a *.o &&\
-		rm *.o
+	mkdir -p $(LIB_DIR)
+	cp $(SOLCLIENT_DIR)/lib/libsolclient.a* $(LIB_DIR)
+	cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && ar -rcs libsolwrap.a *.o && rm *.o
 
 lib-tests:
 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
