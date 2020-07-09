@@ -91,7 +91,6 @@ sol_msg_req_id(solClient_opaqueMsg_pt msg_p)
     return result;
 }
 
-
 solClient_rxMsgCallback_returnCode_t 
 on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void *user_p)
 {

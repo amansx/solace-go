@@ -1,48 +1,4 @@
-/// +build core
-
 package main
-
-/* 
-Package gosol provides acces to the solace messaging platform for 
-pub/sub,
-queueing and 
-guaranteed messaging capabilities.
-
-All message delivery to message-consumer applications is asynchronous,
-via a registered MsgHandler event callback. 
-
-The entire package is mainly an asynchronous API, providing an interface by which applications can
-register several different asynchronous event-handlers for notifications of 
-Message, 
-Error, 
-Connectivity and 
-Publisher events. 
-
-These events are registered with the underlying Solace messaging API 
-by passing function-references into the Init() function, 
-which should always be the first function called in any Solace messaging client session.
-
-The API supports several common messaging use cases such as:
-
-- Publish/Subscribe messaging that decouples producers and consumers from each other, 
-usually over a non-guaranteed transport but also supported for Guaranteed transport
-
-- Point-to-point queueing of guaranteed messages via a named queue known 
-by the publisher and subscriber applications
-
-- Streaming publication of guaranteed messages with multiple messages 
-in-flight that can be correlated back to the original message via asynchronous 
-message-acknowledgements to the publisher
-
-- Guaranteed message consumption via durable subscribers acknowledging 
-messages to the Solace message broker either automatically within the 
-API or manually by the application
-
-- Guaranteed message consumption via either Solace forwarding mode: 
-STORE-AND-FORWARD, or CUT-THROUGH-PERSISTENCE
-
-*/
-
 
 // #include "sol_api.h"
 // #include <stdlib.h>
@@ -75,71 +31,9 @@ STORE-AND-FORWARD, or CUT-THROUGH-PERSISTENCE
 // }
 import "C"
 import "unsafe"
-import "internal/solace"
+import cptr "github.com/mattn/go-pointer"
 
-// Session handle is return from Init(), and passed into all other functions
 type SESSION uint64
-
-
-/*
-MsgHandler functions are registered callbacks invoked upon receipt
-of Solace messages for all transports (Guaranteed and Direct). See also
-type MsgEvent.
-*/
-// type MsgHandler func(sess SESSION, msg *MsgEvent)
-type MsgHandler func(msg solace.MessageEvent)
-
-/*
-ErrHandler functions are registered callbacks invoked upon Solace
-errors. See also type ErrEvent.
-*/
-type ErrHandler func(err solace.ErrorEvent)
-
-/*
-PubHandler functions are registered callbacks invoked upon Solace
-Publisher events such as message ACK or REJECT events; for streaming
-publishers it can include publisher-provided correlation data.. See also
-type PubEvent.
-*/
-type PubHandler func(pub solace.PublisherEvent)
-
-/*
-ConHandler functions are registered callbacks invoked upon Solace
-Connectivity events such as disconnect/reconnecting/reconnected
-events. See also type ConEvent.
-*/
-type ConHandler func(con solace.ConnectionEvent)
-
-/*
-The Callbacks struct contains callback function references for all
-Solace events and is passed into the Init function.
-
-- MsgCB: Event callback for message events; this is invoked for all message 
-transports, Guaranteed and Direct.
-     
-- ErrCB: Event callback for error events.
-     
-- PubCB: Event callback for publisher events. Typically this is used
-to handle asynchronous message-acks from the broker when the
-publisher is configured to stream Guaranteed messages (rather than
-publish and wait for the ack synchronously like a JMS persistent
-publisher). Possible events include message ACK and REJECT events.
-     
-- ConCB: Event callback for connectivity events. This allows your
-applications to be notified when the connection is lost or restored via
-the Solace API's auto-reconnect logic.
-
-See Init documentation and type documentation for callback function
-types MsgHandler, ErrHandler, PubHandler, and ConHandler, as well as
-their appropriate event type MsgEvent, ErrEvent, ConEvent, PubEvent.
-*/
-type Callbacks struct {
-	MsgCB MsgHandler
-	ErrCB ErrHandler
-	ConCB ConHandler
-	PubCB PubHandler
-}
-
 
 func i2b(i C.int) bool {
 	if (i > 0) {
@@ -173,45 +67,14 @@ func publishedEventTypeToString(i int) string {
 	return "REJECT"
 }
 
+var messagePayloadChannel chan[]byte
+
 //export gosol_on_msg
 func gosol_on_msg(h SESSION, m *C.struct_message_event) {
-	ctx := (*Callbacks)(m.user_data)
+	ctx := cptr.Restore(m.user_data).(*Solace)
+	if n := ctx.GetMessageChannel(); n != nil {
 
-	if ctx.MsgCB != nil {
-
-		// s := unsafe.Sizeof(byte(0))
-
-		// for 
-
-		// bytePtr := (uintptr)(unsafe.Pointer(m.buffer))
-		// bytePtr := unsafe.Pointer(m.buffer)
-		// len  := int(C.int(m.buflen))
-		
-		// var sl = struct {
-		// 	addr uintptr
-		// 	len int
-		// 	cap int
-		// }{bytePtr, lenPtr, lenPtr}
-
-		// ptr := unsafe.Pointer(m.buffer)
-		// if ptr != nil {
-		// 	b := C.GoBytes(ptr, C.int(m.buflen))[:]
-		// 	if b != nil {
-		// 		evt.Buffer = make([]byte, len(b))
-		// 		copy(evt.Buffer, b)
-		// 	}
-		// }
-		
-		// fmt.Println(evt.Buffer)
-		// (*(*[len]byte)(unsafe.Pointer(&out)))
-
-		// evt.Buffer = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
-		// ctx.MsgCB( SESSION(h), evt )
-
-		// evt.Buffer                  = (*[]byte)(unsafe.Pointer(&sl))
-		// evt.Buffer                  = (*[len]byte)(bytePtr)
-
-		evt                        := solace.MessageEvent{}
+		evt                        := MessageEvent{}
 		evt.Session                 = uint64(h)
 		evt.DestinationType         = destinationTypeToString(int(m.desttype))
 		evt.Destination             = C.GoString(m.destination)
@@ -226,8 +89,8 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.CorrelationID           = C.GoString(m.correlationid)
 		
 		if m.buffer != nil {
-			evt.Buffer     = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
-			evt.BufferLen  = uint(m.buflen)
+			evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+			evt.BinaryPayloadLen = uint(m.buflen)
 		}
 
 		if m.application_message_type != nil {
@@ -236,17 +99,16 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 			evt.MessageType  = ""
 		}
 
-		ctx.MsgCB(evt)
+		n <- evt
 
 	}
 }
 
 //export gosol_on_err
 func gosol_on_err(h SESSION, e *C.struct_error_event) {
-	ctx := (*Callbacks)(e.user_data)
-
-	if ctx.ErrCB != nil {
-		evt              := solace.ErrorEvent{}
+	ctx := cptr.Restore(e.user_data).(*Solace)
+	if n := ctx.GetErrorChannel(); n != nil {
+		evt              := ErrorEvent{}
 		evt.Session      = uint64(h)
 		evt.FunctionName = C.GoString(e.fn_name)
 		evt.ReturnCode   = int(e.return_code)
@@ -255,61 +117,39 @@ func gosol_on_err(h SESSION, e *C.struct_error_event) {
 		evt.SCStr        = C.GoString(e.sc_str)
 		evt.ResponseCode = int(e.resp_code)
 		evt.ErrorStr     = C.GoString(e.err_str)
-
-		ctx.ErrCB(evt)
+		n <- evt
 	}
 }
 
 //export gosol_on_pub
 func gosol_on_pub(h SESSION, p *C.struct_publisher_event) {
-	ctx := (*Callbacks)(p.user_data)
-
-	if ctx.PubCB != nil {
-		evt                := solace.PublisherEvent{}
+	ctx := cptr.Restore(p.user_data).(*Solace)
+	if n := ctx.GetPublisherChannel(); n != nil {
+		evt                := PublisherEvent{}
 		evt.Session         = uint64(h)
 		evt.Type            = publishedEventTypeToString(int(p._type))
 		// evt.CorrelationData = unsafe.Pointer(p.correlation_data)
-
-		ctx.PubCB(evt)
+		n <- evt
 	}
 }
 
 //export gosol_on_con
 func gosol_on_con(h SESSION, c *C.struct_connectivity_event) {
-	ctx := (*Callbacks)(c.user_data)
-
-	if ctx != nil && ctx.ConCB != nil {
-		evt := solace.ConnectionEvent{
+	ctx := cptr.Restore(c.user_data).(*Solace)
+	if n := ctx.GetConnectionChannel(); ctx != nil && n != nil {
+		evt := ConnectionEvent{
 			Session: uint64(h),
 			Type   : connectionTypeToString(int(c._type)),
 		}
-		ctx.ConCB(evt)
+		n <- evt
 	}
 }
 
-
-/*
-Init initializes the underlying Solace API and returns a SESSION instance
-to be passed into all further invocations of the gosol API functions to
-identify the proper Solace SESSION for each call. This allows applications
-to open multiple independent Solace sessions.
-
-To Initialize a gosol SESSION, pass in references to all application
-event-callback functions, which are always invoked asynchronously on a
-background Solace thread allocated in the native Solace library. You do
-not need to implement them all, see the documentation for type Callbacks
-*/
-func Init(MsgCB MsgHandler, ErrCB ErrHandler, ConCB ConHandler, PubCB PubHandler) SESSION {
-	cbs := Callbacks { MsgCB, ErrCB, ConCB, PubCB }
-	sess := C.gosol_init( (unsafe.Pointer)(unsafe.Pointer(&cbs)) )
+func Init(solace *Solace) SESSION {
+	sess := C.gosol_init(cptr.Save(solace))
 	return SESSION(sess)
 }
 
-/*
-Connect establishes a TCP connection to a Solace message broker for the provided
-SESSION with the session properties provided in the propsfile. For details about
-Solace session properties, consult the Solace API reference documentation.
-*/
 func Connect(sess SESSION, propsfile string) int {
 	// C.CString allocates new memory on the heap, so need to cleanup afterwards
 	cprops := C.CString(propsfile)
@@ -318,11 +158,6 @@ func Connect(sess SESSION, propsfile string) int {
 	return rc
 }
 
-/*
-Connect establishes a TCP connection to a Solace message broker for the provided
-SESSION with the session properties provided in the propsfile. For details about
-Solace session properties, consult the Solace API reference documentation.
-*/
 func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, windowsize string) int {
 	// C.CString allocates new memory on the heap, so need to cleanup afterwards
 	chost := C.CString(host)
@@ -342,22 +177,11 @@ func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass 
 	return rc
 }
 
-/*
-Disconnect gracefully shuts down a TCP connection to a Solace message broker 
-for the provided SESSION.
-*/
 func Disconnect(sess SESSION) int {
 	return int( C.sol_disconnect( C.SOLHANDLE(sess) ) )
 }
 
 
-/*
-SendDirect publishes a message to a Solace message broker via
-an established SESSION connection using DIRECT (non-guaranteed)
-transport. The message is published to the provided topic; the message
-payload is expected to be Serialized by the calling application and
-provided to gosol as a binary data buffer.
-*/
 func SendDirect(sess SESSION, topic string, buffer unsafe.Pointer, buflen int, userprops string) int {
 	ctopic     := C.CString(topic)
 	cuserProps := C.CString(userprops)
@@ -369,29 +193,14 @@ func SendDirect(sess SESSION, topic string, buffer unsafe.Pointer, buflen int, u
 	return rc
 }
 
-/*
-SendPersistent publishes a message to a Solace message broker via ann
-established SESSION connection usinng Guaranteed transport. The message
-can be published either to a topic or to a queue, distinguished via the
-desttype parameter (TOPIC | QUEUE).
-*/
-/*
-SendPersistentStreaming publishes a message to a Solace message broker
-via ann established SESSION connection usinng Guaranteed transport (see
-SendPersistent documentation). Additionally, SendPersistentStreaming
-supports the transmission of additional Correlation data that will be
-returned toe the application via the PubHandler callback function for
-purposes of correlating streaming message acknowledgements from the
-Solace message broker with the original sent messages.
-*/
 func SendPersistentWithCorelation(
 	sess SESSION, 
 
 	dest string, 
-	desttype solace.DESTINATION_TYPE, 
+	desttype DESTINATION_TYPE, 
 
 	replyTo string, 
-	replyToDestType solace.DESTINATION_TYPE, 
+	replyToDestType DESTINATION_TYPE, 
 
 	messageType string,
 
@@ -446,12 +255,6 @@ func SendPersistentWithCorelation(
 }
 
 
-/*
-SubscribeTopic subscribes to messages published to a Solace message
-broker via an established SESSION connection with a topic string
-representing the consumer's filtering interests. Messages will be consumed
-via DIRECT (non-guaranteed) transport.
-*/
 func SubscribeTopic(sess SESSION, topic string) int {
 	ctopic := C.CString(topic)
 	rc     := int( C.sol_subscribe_topic( C.SOLHANDLE(sess), ctopic ) )
@@ -460,10 +263,6 @@ func SubscribeTopic(sess SESSION, topic string) int {
 }
 
 
-/*
-UnsubscribeTopic unsubscribes from a previously subscribed topic to a Solace 
-message broker via an established SESSION connection.
-*/
 func UnsubscribeTopic(sess SESSION, topic string) int {
 	ctopic := C.CString(topic)
 	rc     := int( C.sol_unsubscribe_topic( C.SOLHANDLE(sess), ctopic ) )
@@ -471,30 +270,13 @@ func UnsubscribeTopic(sess SESSION, topic string) int {
 	return rc
 }
 
-/*
-BindQueue establishes a connection to a named queue on a Solace
-message broker via an established SESSION connection. All matching
-cache messages will be delivered to the application via the MsgHandler
-callback function. The binding allows the consumer to consume messages
-from the queue with 2 optional forward modes (STORE_FWD, CUT_THRU) and
-2 optional ack modes (AUTO_ACK, MANUAL_ACK). In the case of MANUAL_ACK,
-the application is required to acknowledge messages back to the Solace
-message router for removal from the queue via the gosol.AckMsg function.
-*/
-func BindQueue(sess SESSION, queue string, fwdmode solace.FWD_MODE, ackmode solace.ACK_MODE) int {
+func BindQueue(sess SESSION, queue string, fwdmode FWD_MODE, ackmode ACK_MODE) int {
 	cqueue := C.CString(queue)
 	rc     := int( C.sol_bind_queue( C.SOLHANDLE(sess), cqueue, uint32(fwdmode), uint32(ackmode) ) )
 	C.free( unsafe.Pointer(cqueue) )
 	return rc
 }
 
-
-/*
-UnbindQueue releases a connection to a named queue on a Solace message
-broker via an establed SESSION connection. The released binding allows
-other consumers to continue consuming messages from the queue, and the
-queue will not be destroyed.
-*/
 func UnbindQueue(sess SESSION, queue string) int {
 	cqueue := C.CString(queue)
 	rc     := int( C.sol_unbind_queue( C.SOLHANDLE(sess), cqueue ) )
@@ -502,23 +284,10 @@ func UnbindQueue(sess SESSION, queue string) int {
 	return rc
 }
 
-/*
-AckMsg allows applications to Acknowledge messages that were delivered
-over Guaranteed transport from a via an established SESSION connection
-to a Solace message broker. This is only required for messages that were
-delivered as a result of binding to a Solace message queue via BindQueue
-with MANUAL_ACK ack-mode.
-*/
 func AckMsg(sess SESSION, flow uint64, msgid uint64) int {
 	return int( C.sol_ack_msg( C.SOLHANDLE(sess), C.FLOWHANDLE(flow), C.SOLMSGID(msgid) ) )
 }
 
-/*
-CacheReq requests messages from a SolCache instance identified via
-cach_name and matching a filtering subscription interest expressed via
-the topic_sub parameter. All matching cache messages will be delivered
-to the application via the MsgHandler callback function.
-*/
 func CacheReq(sess SESSION, cache_name string, topic_sub string , request_id int) int {
 	ccache_name := C.CString(cache_name)
 	ctopic_sub  := C.CString(topic_sub)

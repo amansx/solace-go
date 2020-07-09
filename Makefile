@@ -50,10 +50,6 @@ lib-tests:
 test:
 	$(RUN_TESTS)
 
-binding:
-	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -tags "core" -buildmode=plugin -o $(LIB_DIR)/solace.linux.amd64.gopl
-	cp $(LIB_DIR)/solace.linux.amd64.gopl $(BUILD_DIR)/
-
-example:
-	go build -o $(BUILD_DIR)/publisherq  publisher.queue.example.go
-	go build -o $(BUILD_DIR)/subscriberq subscriber.queue.example.go
+build:
+	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -o pub solace.go gosol.go types.go publisher.queue.example.go
+	CGO_LDFLAGS="$(STATIC_LIBS) $(WRAPPER_GO_LIBS)" CGO_CFLAGS="-fPIC $(CXXFLAGS)" go build -o sub solace.go gosol.go types.go subscriber.queue.example.go
