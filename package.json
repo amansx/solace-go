@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "clean": "go clean -modcache",
     "docker::clean": "docker rm -f $(docker ps -a -q) && docker images -f 'dangling=true' -q | xargs -L1 docker rmi --force",
     "docker::solace": "docker run --rm -d -p 8080:8080 -p 8008:8008 -p 55555:55555 --shm-size=2g --env username_admin_globalaccesslevel=admin --env username_admin_password=admin --name=solace solace-pubsub-standard:9.5.0.30",
     "docker::solace::install": "./includes/solace-standard/install.sh",
