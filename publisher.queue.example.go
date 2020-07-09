@@ -2,7 +2,7 @@
 
 package main
 
-import "sync";
+// import "sync";
 import "fmt";
 import "os"
 import "path"
@@ -21,7 +21,7 @@ func pluginPath(pluginName string) string {
 
 func onMessage(e solace.MessageEvent) {
 	fmt.Printf("%+v\n", e)
-	fmt.Println(string(e.Buffer))
+	fmt.Println(e.Buffer)
 	fmt.Println(e.UserProperties)
 }
 
@@ -41,8 +41,8 @@ const queueName = "myqueue"
 
 func main() {
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// var wg sync.WaitGroup
+	// wg.Add(1)
 
 		// Load plugin
 		if so, err := plugin.Open(pluginPath("solace.linux.amd64.gopl")); err == nil {
@@ -50,41 +50,38 @@ func main() {
 			// Lookup plugin entry function
 			if gosolace, err := so.Lookup("InitSolaceWithCallback"); err == nil {
 
-				go func(){
 					// Cast Entry function
 					if initSolace, ok := gosolace.(*solace.InitSolaceWithCallback); ok {
 
 						s := (*initSolace)(onMessage, onError, onConnectionEvent, onPublisherEvent)
 						s.Connect("host.docker.internal:55555", "default", "default", "", "1")
 
-						s.Publish(
-							solace.DESTINATION_TYPE_QUEUE, 
-							queueName, 
-							
-							solace.DESTINATION_TYPE_QUEUE, 
-							queueName, 
 
-							"JSON", 
+						for i := 0; i < 10000; i += 1 {
+							b := make([]byte, 100000)
+							fmt.Printf("%+v\n", b)
+							s.Publish(
+								// solace.DESTINATION_TYPE_QUEUE, 
+								solace.DESTINATION_TYPE_NONE, queueName, 
+								solace.DESTINATION_TYPE_QUEUE, queueName, 
+								"JSON", 
+								b,
+								map[string]interface{}{ 
+									"aman": 12, 
+									"abc": true, 
+									"yada": "aman",
+								},
+								"12",
+								12,
+							)
+						}
 
-							[]byte("Hello World"), 
-							
-							map[string]interface{}{ 
-								"aman": 12, 
-								"abc": true, 
-								"yada": "aman",
-							},
-
-							"12",
-
-							12,
-						
-						)
 						// s.UnsubscribeQueue(queueName)
-						// s.Disconnect()
+						// s.Unsubscribe(queueName)
+						s.Disconnect()
 
 					}
-				}()
-
+				
 			} else {
 				fmt.Println(err)
 			}
@@ -94,5 +91,5 @@ func main() {
 		}
 
 
-	wg.Wait()
+	// wg.Wait()
 }

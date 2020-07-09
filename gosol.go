@@ -178,19 +178,57 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 	ctx := (*Callbacks)(m.user_data)
 
 	if ctx.MsgCB != nil {
-		evt                  := solace.MessageEvent{}
-		
-		evt.Session          = uint64(h)
-		
-		evt.DestinationType  = destinationTypeToString(int(m.desttype))
-		evt.Destination      = C.GoString(m.destination)
-		
-		evt.ReplyToDestinationType = destinationTypeToString(int(m.replyToDestType))
-		evt.ReplyToDestination     = C.GoString(m.replyTo)
 
-		evt.Flow             = uint64(m.flow)
+		// s := unsafe.Sizeof(byte(0))
+
+		// for 
+
+		// bytePtr := (uintptr)(unsafe.Pointer(m.buffer))
+		// bytePtr := unsafe.Pointer(m.buffer)
+		// len  := int(C.int(m.buflen))
 		
-		evt.MessageID        = uint64(m.id)
+		// var sl = struct {
+		// 	addr uintptr
+		// 	len int
+		// 	cap int
+		// }{bytePtr, lenPtr, lenPtr}
+
+		// ptr := unsafe.Pointer(m.buffer)
+		// if ptr != nil {
+		// 	b := C.GoBytes(ptr, C.int(m.buflen))[:]
+		// 	if b != nil {
+		// 		evt.Buffer = make([]byte, len(b))
+		// 		copy(evt.Buffer, b)
+		// 	}
+		// }
+		
+		// fmt.Println(evt.Buffer)
+		// (*(*[len]byte)(unsafe.Pointer(&out)))
+
+		// evt.Buffer = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+		// ctx.MsgCB( SESSION(h), evt )
+
+		// evt.Buffer                  = (*[]byte)(unsafe.Pointer(&sl))
+		// evt.Buffer                  = (*[len]byte)(bytePtr)
+
+		evt                        := solace.MessageEvent{}
+		evt.Session                 = uint64(h)
+		evt.DestinationType         = destinationTypeToString(int(m.desttype))
+		evt.Destination             = C.GoString(m.destination)
+		evt.ReplyToDestinationType  = destinationTypeToString(int(m.replyToDestType))
+		evt.ReplyToDestination      = C.GoString(m.replyTo)
+		evt.Flow                    = uint64(m.flow)
+		evt.MessageID               = uint64(m.id)
+		evt.RequestID               = int(m.req_id)
+		evt.Redelivered             = i2b(m.redelivered_flag)
+		evt.Discard                 = i2b(m.discard_flag)
+		evt.UserProperties          = C.GoString(m.user_properties)
+		evt.CorrelationID           = C.GoString(m.correlationid)
+		
+		if m.buffer != nil {
+			evt.Buffer     = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+			evt.BufferLen  = uint(m.buflen)
+		}
 
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)
@@ -198,19 +236,8 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 			evt.MessageType  = ""
 		}
 
-		evt.Buffer           = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
-		evt.BufferLen        = uint(m.buflen)
-		
-		evt.RequestID        = int(m.req_id)
-		evt.Redelivered      = i2b(m.redelivered_flag)
-		evt.Discard          = i2b(m.discard_flag)
-		
-		evt.UserProperties   = C.GoString(m.user_properties)
-		
-		evt.CorrelationID   = C.GoString(m.correlationid)
-
-		// ctx.MsgCB( SESSION(h), evt )
 		ctx.MsgCB(evt)
+
 	}
 }
 
@@ -241,7 +268,7 @@ func gosol_on_pub(h SESSION, p *C.struct_publisher_event) {
 		evt                := solace.PublisherEvent{}
 		evt.Session         = uint64(h)
 		evt.Type            = publishedEventTypeToString(int(p._type))
-		evt.CorrelationData = unsafe.Pointer(p.correlation_data)
+		// evt.CorrelationData = unsafe.Pointer(p.correlation_data)
 
 		ctx.PubCB(evt)
 	}

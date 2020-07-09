@@ -20,9 +20,10 @@ func pluginPath(pluginName string) string {
 }
 
 func onMessage(e solace.MessageEvent) {
-	fmt.Printf("%+v\n", e)
-	fmt.Println(string(e.Buffer))
-	fmt.Println(e.UserProperties)
+	fmt.Printf("%v\n", e.Buffer)
+	// fmt.Printf("%+v\n", e.BufferLen)
+	// fmt.Println(string(e.Buffer))
+	// fmt.Println(e.UserProperties)
 }
 
 func onError(e solace.ErrorEvent) {
@@ -54,7 +55,8 @@ func main() {
 					go func(){
 						s := (*initSolace)(onMessage, onError, onConnectionEvent, onPublisherEvent)
 						s.Connect("host.docker.internal:55555", "default", "default", "", "1")
-						s.SubscribeQueue(queueName, solace.ACK_MODE_MANUAL)
+						s.Subscribe(queueName)
+						// s.SubscribeQueue(queueName, solace.ACK_MODE_MANUAL)
 						// s.UnsubscribeQueue(queueName)
 						// s.Disconnect()
 					}()
