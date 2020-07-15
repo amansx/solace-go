@@ -90,8 +90,7 @@ const char** read_props(const char* propsfile)
 }
 
 
-const char** read_prop_params(const char* host, const char* vpn, const char* user, const char* pass, const char* windowsize)
-{
+const char** read_prop_params(const char* host, const char* vpn, const char* user, const char* pass, const char* clientName, const char* appDesc, const char* windowsize) {
 
     std::string SESSION_HOST_K = "SESSION_HOST";
     std::string SESSION_HOST_V = host;
@@ -108,12 +107,20 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     std::string SESSION_PUB_WINDOW_SIZE_K = "SESSION_PUB_WINDOW_SIZE";
     std::string SESSION_PUB_WINDOW_SIZE_V = windowsize;
 
+    std::string SESSION_CLIENT_NAME_K = "SESSION_CLIENT_NAME";
+    std::string SESSION_CLIENT_NAME_V = clientName;
+
+    std::string SESSION_APP_DESC_K = "SESSION_APPLICATION_DESCRIPTION";
+    std::string SESSION_APP_DESC_V = appDesc;
+
     std::map<std::string, std::string> props;
     props[SESSION_HOST_K]            = trim(SESSION_HOST_V);
     props[SESSION_VPN_NAME_K]        = trim(SESSION_VPN_NAME_V);
     props[SESSION_USERNAME_K]        = trim(SESSION_USERNAME_V);
     props[SESSION_PASSWORD_K]        = trim(SESSION_PASSWORD_V);
     props[SESSION_PUB_WINDOW_SIZE_K] = trim(SESSION_PUB_WINDOW_SIZE_V);
+    props[SESSION_APP_DESC_K]        = trim(SESSION_APP_DESC_V);
+    props[SESSION_CLIENT_NAME_K]     = trim(SESSION_CLIENT_NAME_V);
 
     const char** sp = new const char*[ props.size()*2 +1 ];
     std::for_each( props.begin(), props.end(), inserter(sp) );

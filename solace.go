@@ -162,20 +162,23 @@ func Connect(sess SESSION, propsfile string) int {
 	return rc
 }
 
-func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, windowsize string) int {
+func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string) int {
 	// C.CString allocates new memory on the heap, so need to cleanup afterwards
-	chost := C.CString(host)
-	cvpn  := C.CString(vpn)
-	cuser := C.CString(user)
-	cpass := C.CString(pass)
-	cws   := C.CString(windowsize)
-
-	rc    := int( C.sol_connect_with_params( C.SOLHANDLE(sess), chost, cvpn, cuser, cpass, cws ) )
+	chost    := C.CString(host)
+	cvpn     := C.CString(vpn)
+	cuser    := C.CString(user)
+	cpass    := C.CString(pass)
+	cappName := C.CString(appName)
+	cappDesc := C.CString(appDesc)
+	cws      := C.CString(windowsize)
+	rc      := int( C.sol_connect_with_params( C.SOLHANDLE(sess), chost, cvpn, cuser, cpass, cappName, cappDesc, cws ))
 
 	C.free(unsafe.Pointer(chost))
 	C.free(unsafe.Pointer(cvpn))
 	C.free(unsafe.Pointer(cuser))
 	C.free(unsafe.Pointer(cpass))
+	C.free(unsafe.Pointer(cappName))
+	C.free(unsafe.Pointer(cappDesc))
 	C.free(unsafe.Pointer(cws))
 
 	return rc

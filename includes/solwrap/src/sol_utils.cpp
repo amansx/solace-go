@@ -127,12 +127,12 @@ sol_connect(SOLHANDLE handle, const char* propsfile)
 }
 
 int 
-sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* windowsize)
+sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* cn, const char* cd, const char* windowsize)
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
 
-    state->props_ = read_prop_params(host, vpn, user, pass, windowsize);
+    state->props_ = read_prop_params(host, vpn, user, pass, cn, cd, windowsize);
 
     solClient_session_createFuncInfo_t ss_fn_info =  SOLCLIENT_SESSION_CREATEFUNC_INITIALIZER;
     
@@ -140,7 +140,7 @@ sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, con
     ss_fn_info.eventInfo.user_p     = state;
     ss_fn_info.rxMsgInfo.callback_p = on_msg_cb;
     ss_fn_info.rxMsgInfo.user_p     = state;
-
+    
     solClient_log(SOLCLIENT_LOG_INFO, "creating solClient session" );
     if( (rc = solClient_session_create(state->props_, state->ctx_, &(state->sess_), &ss_fn_info, sizeof(solClient_session_createFuncInfo_t))) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_session_create()" );
@@ -153,6 +153,7 @@ sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, con
 
     return rc;
 }
+
 
 int
 sol_disconnect(SOLHANDLE handle)
