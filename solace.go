@@ -326,7 +326,7 @@ func (this *Solace) GetPublisherChannel() chan PublisherEvent {
 }
 
 func (this Solace) Connect(host string, vpn string, user string, pass string, windowsize string) {
-	ConnectWithParams(this.sess, host, vpn, user, pass, windowsize)
+	ConnectWithParams(this.sess, host, vpn, user, pass, appName, appDesc, windowsize)
 }
 
 func (this Solace) NotifyOnMessage(callback func(msg MessageEvent)) {
