@@ -325,7 +325,7 @@ func (this *Solace) GetPublisherChannel() chan PublisherEvent {
 	return this.publisherEventChannel
 }
 
-func (this Solace) Connect(host string, vpn string, user string, pass string, windowsize string) {
+func (this Solace) Connect(host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string) {
 	ConnectWithParams(this.sess, host, vpn, user, pass, appName, appDesc, windowsize)
 }
 
