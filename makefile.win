@@ -11,7 +11,7 @@ PYINC=
 PYLIB=
 PYDEF=
 
-INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include /usr/lib/gcc/x86_64-w64-mingw32/10-win32/
+INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
 LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib.win
 STATIC_LIBS          = $(CURDIR)/lib.win/libsolwrap.lib $(SOLCLIENT_DIR)/lib.win/libsolclient.lib
 WRAP_LIBS            = 
@@ -44,6 +44,7 @@ $(SONAME): $(SOL_SRC)
 	@mkdir -p $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_s.lib $(LIB_DIR)
+	@cp /usr/lib/gcc/x86_64-w64-mingw32/10-win32/libstdc++.dll.a $(LIB_DIR)
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.lib *.o && rm *.o
 
 lib-tests:
