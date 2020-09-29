@@ -8,7 +8,7 @@
     "docker::clean": "docker rm -f $(docker ps -a -q) && docker images -f 'dangling=true' -q | xargs -L1 docker rmi --force",
     "docker::solace": "docker run --rm -d -p 8080:8080 -p 8008:8008 -p 55555:55555 --shm-size=2g --env username_admin_globalaccesslevel=admin --env username_admin_password=admin --name=solace solace-pubsub-standard:9.5.0.30",
     "docker::solace::install": "./includes/solace-standard/install.sh",
-    "docker::driver": "docker run -v $INIT_CWD/lib.linux:/root/solace/lib.linux -v $INIT_CWD/lib.osx:/root/solace/lib.osx -v $INIT_CWD/lib.win:/root/solace/lib.win -v $INIT_CWD/bin:/root/solace/bin --rm solace-driver",
+    "docker::driver": "docker run -v $INIT_CWD/go.mod:/root/solace/go.mod -v $INIT_CWD/go.sum:/root/solace/go.sum -v $INIT_CWD/lib.linux:/root/solace/lib.linux -v $INIT_CWD/lib.osx:/root/solace/lib.osx -v $INIT_CWD/lib.win:/root/solace/lib.win -v $INIT_CWD/bin:/root/solace/bin --rm solace-driver",
     "docker::driver::build": "docker build -t solace-driver .",
     "docker::driver::build::force": "docker build --no-cache -t solace-driver .",
     "docker::driver::debug": "docker run -v $INIT_CWD/:/root/solace/ -it --rm solace-driver /bin/bash || exit 0"
