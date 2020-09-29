@@ -41,9 +41,10 @@ $(SONAME): $(SOL_SRC)
 	@$(CC) --version
 	@$(CXX) --version	
 	@echo "=============================="
-	@mkdir -p $(LIB_DIR)
-	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)/libsolclient.a
-	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_s.lib $(LIB_DIR)/libsolclient_s.a
+	@mkdir -p $(LIB_DIR) Contents/JudyCommon Contents/third-party/zlib-1.2.3 Contents/Judy1 Contents/JudyL Contents/JudySL Contents/JudyHS Contents/vcbuild Contents/third-party/c-ares \
+	Contents/impl
+
+	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_d.lib $(LIB_DIR)
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.lib *.o && rm *.o
 
 lib-tests:
@@ -58,5 +59,4 @@ test:
 
 examples:
 	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/pub.example.win example.publisher.go
-	wine64 bin/pub.example.win
 	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/sub.example.win example.subscriber.go
