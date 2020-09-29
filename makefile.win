@@ -11,7 +11,7 @@ PYINC=
 PYLIB=
 PYDEF=
 
-INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
+INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include /usr/lib/gcc/x86_64-w64-mingw32/10-win32/
 LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib.win
 STATIC_LIBS          = $(CURDIR)/lib.win/libsolwrap.lib $(SOLCLIENT_DIR)/lib.win/libsolclient.lib
 WRAP_LIBS            = 
