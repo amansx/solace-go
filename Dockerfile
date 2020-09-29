@@ -5,7 +5,7 @@ RUN apt-get update && \
 	apt-get install -y \
 	build-essential make nano git wget curl bison \
 	gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 wine64 \
-	gcc-multilib
+	gcc-multilib mingw-w64-tools
 
 WORKDIR /root
 RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer > ./gvm-installer.sh &&\
