@@ -41,9 +41,7 @@ $(SONAME): $(SOL_SRC)
 	@$(CC) --version
 	@$(CXX) --version	
 	@echo "=============================="
-	@mkdir -p $(LIB_DIR) Contents/JudyCommon Contents/third-party/zlib-1.2.3 Contents/Judy1 Contents/JudyL Contents/JudySL Contents/JudyHS Contents/vcbuild Contents/third-party/c-ares \
-	Contents/impl
-
+	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_d.lib $(LIB_DIR)
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.lib *.o && rm *.o
 
