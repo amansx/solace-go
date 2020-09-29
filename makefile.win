@@ -13,7 +13,7 @@ PYDEF=
 
 INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
 LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib.win
-STATIC_LIBS          = $(CURDIR)/lib.win/libsolwrap.a $(SOLCLIENT_DIR)/lib.win/libsolclient.lib
+STATIC_LIBS          = $(CURDIR)/lib.win/libsolwrap.lib $(SOLCLIENT_DIR)/lib.win/libsolclient.lib
 WRAP_LIBS            = 
 WRAP_BIN_LIBS        = 
 WRAP_GO_LIBS         = stdc++
@@ -44,7 +44,7 @@ $(SONAME): $(SOL_SRC)
 	@mkdir -p $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_s.lib $(LIB_DIR)
-	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.a *.o && rm *.o
+	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.lib *.o && rm *.o
 
 lib-tests:
 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.win     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
