@@ -7,7 +7,7 @@ package solace
 //#cgo darwin CFLAGS: -D_REENTRANT
 //#cgo darwin LDFLAGS: -L${SRCDIR}/lib.osx -lsolwrap -lsolclient -lcrypto -lssl -lgssapi_krb5 -lpthread -lstdc++
 //#cgo windows CFLAGS: -DSOL_WRAP_API -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL
-//#cgo windows LDFLAGS: -L${SRCDIR}/lib.win -llibsolwrap -llibsolclient -lstdcpp
+//#cgo windows LDFLAGS: -L${SRCDIR}/lib.win -llibsolwrap -llibsolclient -lstdcpp -lstdgcc
 //#include <stdlib.h>
 //#include "sol_api.h"
 //#include "solace.c"

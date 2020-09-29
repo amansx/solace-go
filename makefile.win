@@ -44,6 +44,7 @@ $(SONAME): $(SOL_SRC)
 	@mkdir -p $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_s.lib $(LIB_DIR)
+	@cp /usr/lib/gcc/x86_64-w64-mingw32/10-win32/libgcc.a $(LIB_DIR)/libstdgcc.a
 	@cp /usr/lib/gcc/x86_64-w64-mingw32/10-win32/libstdc++.a $(LIB_DIR)/libstdcpp.a
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.lib *.o && rm *.o
 
