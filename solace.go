@@ -1,77 +1,22 @@
 package solace
 
-// #cgo amd64 386 CFLAGS: -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -D_REENTRANT -D_LINUX_X86_64
-// #cgo CFLAGS: -I${SRCDIR}/includes/solwrap/include -fPIC -m64 -g
-// #cgo LDFLAGS: -L${SRCDIR}/lib -lsolwrap -lsolclient -lpthread -lrt -lstdc++
-// #include "sol_api.h"
-// #include <stdlib.h>
-//
-// extern void gosol_on_msg(SOLHANDLE h, message_event* msg);
-// extern void gosol_on_err(SOLHANDLE h, error_event* err);
-// extern void gosol_on_pub(SOLHANDLE h, publisher_event* pub);
-// extern void gosol_on_con(SOLHANDLE h, connectivity_event* con);
-// 
-// static void on_msg(SOLHANDLE h, message_event* msg) {
-//	gosol_on_msg( h, msg );
-// }
-// static void on_err(SOLHANDLE h, error_event* err) {
-//	gosol_on_err( h, err );
-// }
-// static void on_pub(SOLHANDLE h, publisher_event* pub) {
-//	gosol_on_pub( h, pub );
-// }
-// static void on_con(SOLHANDLE h, connectivity_event* con) {
-//	gosol_on_con( h, con );
-// }
-// static SOLHANDLE gosol_init(void* gohandlers) {
-//	callback_functions cbs;
-//	cbs.err_cb = on_err;
-//	cbs.msg_cb = on_msg;
-//	cbs.pub_cb = on_pub;
-//	cbs.con_cb = on_con;
-//	cbs.user_data = gohandlers;
-// 	return sol_init( on_msg, on_err, on_pub, on_con, gohandlers );
-// }
+//#cgo amd64 386 CFLAGS: -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES
+//#cgo CFLAGS: -I. -I${SRCDIR}/includes/solwrap/include -fPIC -m64 -g
+//#cgo linux CFLAGS: -D_REENTRANT -D_LINUX_X86_64
+//#cgo linux LDFLAGS: -L${SRCDIR}/lib.linux -lsolwrap -lsolclient -lpthread -lrt -lstdc++
+//#cgo darwin CFLAGS: -D_REENTRANT
+//#cgo darwin LDFLAGS: -L${SRCDIR}/lib.osx -lsolwrap -lsolclient -lpthread -lstdc++
+//#cgo windows CFLAGS: -DSOL_WRAP_API -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL
+//#cgo windows LDFLAGS: -L${SRCDIR}/lib.win -lsolwrap -llibsolclient -lstdc++
+//#include <stdlib.h>
+//#include "sol_api.h"
+//#include "solace.c"
 import "C"
 import "unsafe"
 import "encoding/json"
 import cptr "github.com/mattn/go-pointer"
 
 type SESSION uint64
-
-func i2b(i C.int) bool {
-	if (i > 0) {
-		return true
-	}
-	return false
-}
-
-func destinationTypeToString(i int) string {
-	switch i {
-		case 1: return "TOPIC"
-		case 2: return "QUEUE"
-	}
-	return "NONE"
-}
-
-func connectionTypeToString(i int) string {
-	switch i {
-		case 1: return "UP"
-		case 2: return "RECONNECTING"
-		case 3: return "RECONNECTED"
-	}
-	return "DOWN"
-}
-
-func publishedEventTypeToString(i int) string {
-	switch i {
-	case 1:
-		return "ACK"
-	}
-	return "REJECT"
-}
-
-var messagePayloadChannel chan[]byte
 
 //export gosol_on_msg
 func gosol_on_msg(h SESSION, m *C.struct_message_event) {
@@ -148,6 +93,42 @@ func gosol_on_con(h SESSION, c *C.struct_connectivity_event) {
 		n <- evt
 	}
 }
+
+func i2b(i C.int) bool {
+	if (i > 0) {
+		return true
+	}
+	return false
+}
+
+func destinationTypeToString(i int) string {
+	switch i {
+		case 1: return "TOPIC"
+		case 2: return "QUEUE"
+	}
+	return "NONE"
+}
+
+func connectionTypeToString(i int) string {
+	switch i {
+		case 1: return "UP"
+		case 2: return "RECONNECTING"
+		case 3: return "RECONNECTED"
+	}
+	return "DOWN"
+}
+
+func publishedEventTypeToString(i int) string {
+	switch i {
+	case 1:
+		return "ACK"
+	}
+	return "REJECT"
+}
+
+var messagePayloadChannel chan[]byte
+
+
 
 func Init(solace *Solace) SESSION {
 	sess := C.gosol_init(cptr.Save(solace))

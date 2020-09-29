@@ -1,7 +1,7 @@
 /**
-* @file solClientMsg.h Include file for Solace Systems Messaging Buffer Management
+* @file solClientMsg.h include file for Solace Corporation Messaging Buffer Management
 *
-* Copyright 2008-2016 Solace Systems, Inc. All rights reserved.
+* Copyright 2008-2020 Solace Corporation. All rights reserved.
 */
 /** @page msgbuffer Solace Message Buffers
 * 
@@ -611,7 +611,7 @@ solClient_msg_setBinaryAttachment(solClient_opaqueMsg_pt msg_p,
 /**
  * Given a msg_p, set the contents of the binary attachment part to a UTF-8 or ASCII string
  * by copying in from the given pointer until null-terminated. The message
- * will be TLV-encoded suitable for reading by any other Solace Systems Messaging APIs.
+ * will be TLV-encoded suitable for reading by any other Solace Corporation Messaging APIs.
  * If any binary attachment previously existed it is first
  * removed before the new data is copied in.
  *
@@ -639,6 +639,17 @@ solClient_msg_setBinaryAttachmentString(solClient_opaqueMsg_pt msg_p,
  * will be TLV encoded suitable for reading by any other Solace Messaging API.
  * If any binary attachment previously existed it is first
  * removed before the new data is copied in.
+ *
+ * <b>WARNING:</b> This method is intended to be used to add an existing
+ * message independent container to a message. That is, a container created by
+ * either ::solClient_container_createMap() or ::solClient_container_createStream(). 
+ * Do <b>not</b> call this method with a container that is already in the message,
+ * returned from a call to ::solClient_msg_createBinaryAttachmentMap or 
+ * ::solClient_msg_createBinaryAttachmentStream. That is unnecessary as the container
+ * is already in the message. Further, the first operation of 
+ * ::solClient_msg_setBinaryAttachmentContainer() is to wipe out the existing binary
+ * attachment.
+ *
  *
  * @param msg_p    solClient_opaqueMsg_pt that is returned from a previous call
  *                 to solClient_msg_alloc() or received in a receive
@@ -1368,8 +1379,15 @@ solClient_msg_getExpiration(solClient_opaqueMsg_pt    msg_p,
 /**
  * Given a msg_p, get the Class of Service from a message.
  * The  Class of Service has different semantics for direct and guaranteed messages.
- * For direct messaging, it determines the WRR weight for the message.  For guaranteed messaging, it indicates
- * the discard eligibility of the message if the endpoint is congested.
+ *
+ * For direct messages, the class of service selects the weighted round-robin delivery
+ * queue when the message is forwarded to a consumer.  {::SOLCLIENT_COS_1} are the
+ * lowest priority messages and will use the solace message-router D-1 delivery queues.
+ *
+ * For messages published as guaranteed messages, * messages published
+ * with ::SOLCLIENT_COS_1 can be rejected by the solace message-router if
+ * that message would cause any queue or topic-endpoint to exceed its configured
+ * <i>low-priority-max-msg-count</i>.
  * @param msg_p    solClient_opaqueMsg_pt that is returned from a previous call
  *                 to solClient_msg_alloc() or received in a receive
  *                 message callback.
@@ -1389,8 +1407,16 @@ solClient_msg_getClassOfService(solClient_opaqueMsg_pt msg_p,
 /**
  * Given a msg_p, set the Class of Service to use for transmission.  
  * The  Class of Service has different semantics for direct and guaranteed messages.
- * For direct messaging, it determines the WRR weight for the message.  For guaranteed messaging, it indicates
- * the discard eligibility of the message if the endpoint is congested.
+ *
+ * The  Class of Service has different semantics for direct and guaranteed messages.
+ * For direct messages, the class of service selects the weighted round-robin delivery
+ * queue when the message is forwarded to a consumer.  {::SOLCLIENT_COS_1} are the
+ * lowest priority messages and will use the solace message-router D-1 delivery queues.
+ *
+ * For messages published as guaranteed messages, * messages published
+ * with ::SOLCLIENT_COS_1 can be rejected by the solace message-router if
+ * that message would cause any queue or topic-endpoint to exceed its configured
+ * <i>low-priority-max-msg-count</i>.
  *
  * @param msg_p    solClient_opaqueMsg_pt that is returned from a previous call
  *                 to solClient_msg_alloc() or received in a receive
@@ -1592,39 +1618,6 @@ solClient_msg_isDiscardIndication(solClient_opaqueMsg_pt msg_p);
  */
 solClient_dllExport solClient_bool_t
 solClient_msg_isReplyMsg(solClient_opaqueMsg_pt msg_p);
-
-/**
- * Given a msg_p, set the Deliver-To-One property on a message. 
- * This property is only supported by appliances running SolOS-TR.
- * 
- * When a direct message has the Deliver-To-One property set, it can be delivered
- * only to one client. For a Guaranteed Delivery message, this behavior only applies
- * to the "demoted" direct copy of this message.
- *
- * @param msg_p    solClient_opaqueMsg_pt that is returned from a previous call
- *                 to solClient_msg_alloc() or received in a receive
- *                 message callback.
- * @param val      0 - clear, 1 - set.
- * @returns        ::SOLCLIENT_OK on success, ::SOLCLIENT_FAIL if
- *                       msg_p is invalid.
- * @subcodes
- * @see ::solClient_subCode for a description of all subcodes.
- */
-solClient_dllExport solClient_returnCode_t 
-solClient_msg_setDeliverToOne(solClient_opaqueMsg_pt msg_p,
-                             solClient_bool_t      val);
-
-/**
- * Given a msg_p, test the Deliver-To-One property.
- *
- * @param msg_p    solClient_opaqueMsg_pt returned from a previous call
- *                 to solClient_msg_alloc() or received in a receive
- *                 message callback.
- *
- * @returns        True, if the message has the Deliver-To-One property property set.
- */
-solClient_dllExport solClient_bool_t
-solClient_msg_isDeliverToOne(solClient_opaqueMsg_pt msg_p);
 
 /**
  * Given a msg_p, set the Dead Message Queue (DMQ) eligible property on a message. When this
@@ -1942,7 +1935,7 @@ solClient_msg_getBinaryAttachmentField (solClient_opaqueMsg_pt     msg_p,
  *
  * @param msgStatType The type of statistic to retrieve; one of ::solClient_msg_stats.
  * @param statIndex   The zero-based index of the statistic (for example, which quanta);
- *                    only used for ::SOLCLIENT_MSG_STATS_FREE_DATA_BLOCKS and
+ *                    only used for ::SOLCLIENT_MSG_STATS_ALLOC_DATA_BLOCKS and
  *                    ::SOLCLIENT_MSG_STATS_FREE_DATA_BLOCKS. This must be zero for
  *                    other statistic types.
  * @param statValue_p A pointer to the location to receive the statistic value from.
@@ -3770,6 +3763,28 @@ solClient_dllExport solClient_returnCode_t
 solClient_msg_encodeToSMF(solClient_opaqueMsg_pt         msg_p,
                            solClient_bufInfo_pt           bufinfo_p,
                            solClient_opaqueDatablock_pt  *datab_p);
+
+/**
+ * Get message priority.
+ *
+ * @param msg_p    A pointer to the message 
+ * @param priority_p   A pointer to memory that contains priority on return, or -1 if it is not set.
+ * @returns              ::SOLCLIENT_OK or ::SOLCLIENT_FAIL
+ */
+solClient_dllExport solClient_returnCode_t
+solClient_msg_getPriority(solClient_opaqueMsg_pt msg_p,
+                          solClient_int32_t  *priority_p);
+/**
+ * Set message priority.
+ *
+ * @param msg_p    A pointer to the message 
+ * @param priority Priority value. The valid value range is 0-255 with 0 as the lowest priority and 255 as the highest, or -1 to delete priority.
+ * @returns              ::SOLCLIENT_OK or ::SOLCLIENT_FAIL
+ */
+solClient_dllExport solClient_returnCode_t
+solClient_msg_setPriority(solClient_opaqueMsg_pt msg_p,
+                          solClient_int32_t    priority);
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

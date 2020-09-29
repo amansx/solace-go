@@ -1,18 +1,18 @@
 /**
 *
-* @file solCache.h Include file for the Solace Systems Messaging API for C
+* @file solCache.h Include file for the Solace Corporation Messaging API for C
 *
-* Copyright 2008-2016 Solace Systems, Inc. All rights reserved.
+* Copyright 2008-2020 Solace Corporation. All rights reserved.
 *
 * This include file provides the public constants and API calls for 
-* applications that interface to the Solace Systems SolCache.
+* applications that interface to the Solace Corporation SolCache.
 */
 /** @page solcachepage SolCache API
 *
 * @section solcache SolCache API
 * The SolCache interface is an extension of the CCSMP interface (that is, the C API). 
 * A SolCache object is created (solClient_session_createCacheSession()) in a Session to send messages to a
-* Solace Systems Cache Cluster.  A single Session may have many SolCache objects. Responses
+* Solace Corporation Cache Cluster.  A single Session may have many SolCache objects. Responses
 * from the cache are received in the usual Session rxCallback function.
 *
 * @see \ref solcachecfg "Client Session Configuration Properties"

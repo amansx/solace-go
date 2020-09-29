@@ -1,0 +1,61 @@
+LIBNAME        = solwrap
+SONAME         = lib$(LIBNAME).so
+
+SOLWRAP_DIR    = $(CURDIR)/includes/solwrap
+SOLCLIENT_DIR  = $(CURDIR)/includes/solclient
+
+LIB_DIR        = $(CURDIR)/lib.win
+BUILD_DIR      = $(CURDIR)/bin
+
+PYINC=
+PYLIB=
+PYDEF=
+
+INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
+LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib.win
+STATIC_LIBS          = $(CURDIR)/lib.win/libsolwrap.a $(SOLCLIENT_DIR)/lib.win/libsolclient.lib
+WRAP_LIBS            = 
+WRAP_BIN_LIBS        = 
+WRAP_GO_LIBS         = stdc++
+SYMS                 = SOL_WRAP_API PROVIDE_LOG_UTILITIES SOLCLIENT_CONST_PROPERTIES
+DEBUG                = -g
+
+SOL_SRC     = $(wildcard $(SOLWRAP_DIR)/src/*.cpp)
+SOL_TEST    = $(wildcard ./bin/*.test)
+
+CC           = x86_64-w64-mingw32-gcc
+CXX          = x86_64-w64-mingw32-g++
+CXXFLAGS_LIB = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
+CXXFLAGS     = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
+
+WRAPPER_LIBS      = $(foreach l, $(WRAP_LIBS), -l$l)
+WRAPPER_GO_LIBS   = $(foreach l, $(WRAP_GO_LIBS), -l$l)
+WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
+
+RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && ./$(b) &&) printf "==========\n"
+
+all: $(SONAME)
+
+$(SONAME): $(SOL_SRC)
+	@echo "=============================="
+	@$(CC) --version
+	@$(CXX) --version	
+	@echo "=============================="
+	@mkdir -p $(LIB_DIR)
+	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient.lib $(LIB_DIR)
+	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient_s.lib $(LIB_DIR)
+	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && x86_64-w64-mingw32-ar -rcs libsolwrap.a *.o && rm *.o
+
+lib-tests:
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.win     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+#	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/persistent.test       $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+#	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/subscribe.test        $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test         $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+# 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/cache.test            $(SOLWRAP_DIR)/tests/cache_test.cpp           $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+
+test:
+	$(RUN_TESTS)
+
+examples:
+	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/pub.example.win example.publisher.go
+	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/sub.example.win example.subscriber.go

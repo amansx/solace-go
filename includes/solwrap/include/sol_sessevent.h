@@ -1,6 +1,6 @@
 #ifndef SOL_SESSEVENT_H
 #define SOL_SESSEVENT_H
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /* Windows-only includes */
 #include <winsock2.h>
 #else

@@ -13,7 +13,7 @@ func main() {
 	wg.Add(1)
 
 	s := solace.NewSolace()
-	s.Connect("host.docker.internal:55555", "default", "default", "", "1")
+	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "", "")
 
 	s.NotifyOnMessage(func(msg solace.MessageEvent) {
 		fmt.Printf("%+v\n\n", msg)

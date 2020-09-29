@@ -12,7 +12,7 @@ func main() {
 	wg.Add(1)
 
 	s := solace.NewSolace()
-	s.Connect("host.docker.internal:55555", "default", "default", "", "1")
+	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "qaman", "aman")
 
 	for i := 0; i < 10; i += 1 {
 		size := 10

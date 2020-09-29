@@ -1,8 +1,8 @@
 /**
 *
-* @file solClient.h Include file for the Solace Systems Messaging API for C
+* @file solClient.h include file for the Solace Corporation Messaging API for C
 *
-* Copyright 2007-2016 Solace Systems, Inc. All rights reserved.
+* Copyright 2007-2020 Solace Corporation. All rights reserved.
 *
 * This include file provides the public constants and API calls for clients
 * connecting to a Solace messaging appliance.
@@ -44,7 +44,7 @@ extern "C"
      @li Allows the application to connect to a Solace messaging appliance through the concept of a "Session".
      @li Allows messages to be constructed and sent on a Session and to be received from a Session.
      @li Allows subscriptions to be added to specify what messages are to be received. Subscriptions are
-     topic-based and require the use of a Solace messaging appliance with a Topic Routing Blade (TRB).
+     topic-based.
      @li Support for Guaranteed Message delivery (Queue-based or Topic Endpoint-based).
      Guaranteed messages are received on "Flows" (see solClient_session_createFlow()), which are 
 	 constructed within a Session. Guaranteed Messaging is only available to clients when a Solace messaging appliance
@@ -61,7 +61,7 @@ extern "C"
 
      @section specifics Messaging API for C Specifics
 
-     The Messaging API for C behavior is unique among Solace Systems Messaging APIs in 
+     The Messaging API for C behavior is unique among Solace Corporation Messaging APIs in 
 	 the following ways:
 
      @subsection threading-support Threading Support
@@ -136,8 +136,8 @@ extern "C"
      when not in use.
      
      @section topic-syntax Supported Topic Syntax
-     Topics are in the form "level1/level2/level3".
-     The total length of a Topic can be 250 bytes.
+     Topics are NULL-terminated UTF-8 strings in the form "level1/level2/level3".
+     The total length of a Topic can be 250 bytes, not including the NULL terminator.
      
      @section subscription-syntax Supported Subscription Syntax
      Subscriptions are in the form "level1/level2/level3". \n
@@ -146,9 +146,7 @@ extern "C"
      means match one or more levels at the end of a received topic. For example, "level1/level2/level3/>"
      matches "level1/level2/level3/level4" and "level1/level2/level3/level4/level5", but not
      "level1/level2/level3". \n
-     '>' elsewhere in the subscription has no special meaning. For example, "level1>/level2".
-     
-     @subsection trb-subscription Supported Subscription Syntax with a Topic Routing Blade (TRB) in the Appliance
+     '>' elsewhere in the subscription has no special meaning. For example, "level1>/level2".\n
      The '*' character is a wildcard. When alone at a level, it means match any string at that level
      in a received topic. For example, "level1/ * /level3" matches "/level1/level2/level3". \n
      '*' can also be used to match a level that starts with a specified string. \n
@@ -256,11 +254,11 @@ extern "C"
 
     Protocol is the protocol used for the transport channel. The valid values are: \n
      @li tcp - use a TCP channel for communications between the application and its peers. If no protocol is set, tcp is used as a default.\n
-     @li tcps - use a SSL channel over TCP for communications between the application and its peers. The encryption with compression is not supported. \n
+     @li tcps - use a SSL channel over TCP for communications between the application and its peers.\n
      @li http - use HTTP channels or a WebSocket channel over TCP for communications between the application and its peers. Web Messaging with compression is not supported. \n
      @li https - use HTTP channels or a WebSocket channel over SSL for communications between the application and its peers. Web Messaging with compression is not supported.
   
-    Host is the IP address (or host name) to connect to for a connection. 
+    Host is the IPv4 or IPv6 address or host name to connect to for a connection.  IPv6 addresses must be enclosed in brackets ([]).
 
     Port is the port to connect to for a connection. A value is only required when using a port other than the automatically assigned 
     default port number. The default port for TCP is 55555 when compression is not in use, or 55003 when compression is in use. The default port 
@@ -278,16 +276,19 @@ extern "C"
     If authentication is required for the proxy server, the <b>username</b> and <b>password</b> may be optionally 
     specified before the proxy host.
 
-    proxyHost is the IP address (or host name) of the proxy server. 
+    proxyHost is the IPv4 or IPv6 address or host name of the proxy server. 
 
     proxyPort is the port to connect to for a connection. If the port number is not specified, the default for SOCKS5 is port 1080, and
     the default for Http-Connect is port 3128.
 
     The following examples show how to specify transport channel types. Unless it is otherwise specified, the default port 55555 is used. \n
      @li 192.168.160.28 - connect to IP address 192.168.160.28 and the default port 55555 over TCP. \n
+     @li [fe80::1] - connect to IPV6 address fe80::1 and the default port 55555 over TCP. \n
      @li tcp:192.168.160.28 - connect to IP address 192.168.160.28 and the default port 55555 over TCP. \n
      @li tcps:192.168.160.28 - connect to IP address 192.168.160.28 and the default port 55443 over SSL over TCP.\n
+     @li tcps:[fe80::1] - connect to IPV6 address fe80::1 and the default port 55443 over SSL over TCP. \n
      @li tcp:192.168.160.28:44444 - connect to IP address 192.168.160.28 and port 44444 over TCP. \n
+     @li tcp:[fe80::1]:44444 - connect to IPV6 address fe80::1 and port 44444 over TCP. \n
      @li http&nbsp;://192.168.160.28 - connect to IP address 192.168.160.28 and the default port 80 over HTTP or WebSocket over TCP. \n
      @li https&nbsp;://192.168.160.28 - connect to IP address 192.168.160.28 and the default port 443 over HTTP or WebSocket over SSL over TCP.
 
@@ -299,6 +300,7 @@ extern "C"
          and password <I>PassWord</I>.
      @li http&nbsp;://192.168.160.27:44444\%httpc://proxy.company.com:11080 - connect to the message router at 192.168.160.28, port 44444, using HTTP.
          Connect through the proxy server at proxy.company.com, port 11080.
+     @li [fe80::1]\%socks5://[fe80::2] - connect message router at [fe80::1] through a SOCKS5 proxy server at [fe80::2].
 
      The SOLCLIENT_SESSION_PROP_HOST property also supports multiple host entries separated by comma. 
 
@@ -388,41 +390,28 @@ extern "C"
      
      @section feature-limitations Feature Limitations
 
-     The routing of messages according to their defined Topics can only be used with Solace messaging appliances running
-     Version 4.3 or above, and the appliance must be equipped with a Topic Routing Blade (TRB).
-     In addition, the application description property of a Session only takes effect
-     in this configuration, but it can be set without any side-effects with earlier
-     release appliances or appliances without a TRB.
-
-     The quality of service parameter (part of the flags field of solClient_session_send())
-     is only supported when client mode is enabled on a Session. Otherwise, the quality
-     of service parameter is ignored.
-
-     File descriptor limits in Linux and Solaris operating systems restrict the
-     number of files that can be managed per process to 1024. Because of these
-     limitations due to the use of select(2) to poll devices, the Messaging 
+     File descriptor limits in non-Linux operating systems restrict the
+     number of files that can be managed per process to 1024. These
+     limitations are due to the use of select(2) to poll devices so the Messaging 
      API for C may not manage any single file descriptor which has a numerical 
      value that exceeds 1024.
      
-     If the C API is used in an application that connects to a Solace messaging appliance 
-     with a Topic Routing Blade (TRB), channel connect failures can occur 
-	 if there are more than 1024 Sessions created per process. This limit is 
-	 further reduced by any other files not managed by the C API that the 
-	 application has open.
+     If the C API is used in an application that connects to a Solace messaging appliance,
+     channel connect failures can occur if there are more than 1024 Sessions created per process.
+     This limit is further reduced by any other files not managed by the C API that the 
+     application has open.
 
      Similarly, on Windows platforms, a single Context (see solClient_context_create()) 
-	 cannot manage more than 21 Sessions with pubSub mode enabled (clientMode==0) or 64 
-     Sessions in client mode (clientMode==1). Exceeding these limits can 
-     cause calls to \link ::solClient_context_processEvents 
-     solClient_context_processEvents()\endlink to fail. An application that 
+     cannot manage more than 64 Sessions.  Exceeding these limits can 
+     cause calls to \link ::solClient_session_create 
+     solClient_session_create()\endlink to fail. An application that 
      registers its own file descriptor handlers (by providing non-null 
      function pointers in ::solClient_context_createRegisterFdFuncInfo_t) is not
      limited in the Messaging API for C, but the application might have its own limitations.  
 
-     In all systems, an application that provides its file descriptors to the 
-	 C API to manage (by calling solClient_context_registerForFdEvents())
-     further reduces the number of Sessions that can be handled in a 
-     single Context (Windows) or process-wide (Linux, Solaris).
+     In all non-Linux and non-Windows systems, an application that provides its file descriptors to the 
+     C API to manage (by calling solClient_context_registerForFdEvents()), may not 
+     provide a file decsriptor with a numerical value greater than or equal to 1024.
      
      @subsection certificate-validation OpenSSL Certificate Validation
 
@@ -524,7 +513,7 @@ extern "C"
 #    elif !defined (_WINSOCKAPI_)
 #        error "solClient.h requires winsock.h or winsock2.h to be included by the application before inclusion of solClient.h"
 #    endif
-#    if defined(SOLCLIENT_STATIC_LIB) || defined(SOLCLIENT_CLR_LIB)
+#    if defined(SOLCLIENT_STATIC_LIB)
 #        define solClient_dllExport
 #    elif defined(SOLCLIENT_EXPORTS)
 #        define solClient_dllExport __declspec(dllexport)
@@ -615,7 +604,7 @@ typedef enum solClient_destinationType
 typedef struct solClient_destination 
 {
     solClient_destinationType_t         destType; /**< The type of destination. */
-    const char *                        dest;     /**< The name of the destination (as a NULL-terminated string). */
+    const char *                        dest;     /**< The name of the destination (as a NULL-terminated UTF-8 string). */
 } solClient_destination_t;
 
 /**
@@ -882,7 +871,7 @@ typedef struct solClient_field {
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_CONTROL_OTHER</td>
 *     <td width="300"> The appliance rejected a control message for another reason not separately enumerated.</td>
-*     <td width="300"> Default error subCode for TRB-equipped appliance error responses</td> 
+*     <td width="300"> Default error subCode for appliance error responses</td> 
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_DATA_OTHER</td>
@@ -971,7 +960,7 @@ typedef struct solClient_field {
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_MSG_VPN_NOT_ALLOWED</td>
-*     <td width="300"> The Message VPN name set for the Session is not allowed for the Session's username.</td>
+*     <td width="300"> The Message VPN name configured for the session does not exist.</td>
 *     <td width="300"> 403 Message VPN Not Allowed</td> 
 * </tr>
 * <tr>
@@ -1148,22 +1137,22 @@ typedef struct solClient_field {
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_SUBSCRIPTION_MANAGER_DENIED</td>
-*     <td width="300"> An attempt was made to add a subscription to another client when the Session does not have subscription manager privileges.
+*     <td width="300"> An attempt was made to add a subscription to another client when the Session does not have subscription manager privileges.</td>
 *     <td width="300"> 403 Subscription Manager Denied</td>
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_UNKNOWN_CLIENT_NAME</td>
-*     <td width="300"> An attempt was made to add a subscription to another client that is unknown on the appliance.
+*     <td width="300"> An attempt was made to add a subscription to another client that is unknown on the appliance.</td>
 *     <td width="300"> 403 Unknown Client Name </td>
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_QUOTA_OUT_OF_RANGE</td>
-*     <td width="300"> An attempt was made to provision an endpoint with a quota that is out of range.
+*     <td width="300"> An attempt was made to provision an endpoint with a quota that is out of range.</td>
 *     <td width="300"> 400 Quota Out Of Range </td>
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_SUBSCRIPTION_ATTRIBUTES_CONFLICT</td>
-*     <td width="300"> The client attempted to add a subscription which already exists but it has different properties, see ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE. </td>
+*     <td width="300"> The client attempted to add a subscription which already exists but it has different properties. </td>
 *     <td width="300"> 400 Subscription Attributes Conflict With Existing Subscription</td>
 * </tr>
 * <tr>
@@ -1376,7 +1365,7 @@ typedef struct solClient_field {
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_UNBIND_RESPONSE_LOST </td>
-*     <td width="300"> The application called solClient_flow_destroy() and the unbind-response was not received </td>
+*     <td width="300"> The application called solClient_flow_destroy() and the unbind-response was not received. </td>
 *     <td width="300"> N/A</td> 
 * </tr>
 * <tr>
@@ -1391,18 +1380,140 @@ typedef struct solClient_field {
 * </tr>
 * <tr>
 *    <td width="300"> SOLCLIENT_SUBCODE_PROXY_AUTH_REQUIRED</td>
-*    <td width="300"> The host entry did not contain proxy authentication when required by the proxy server</td>
+*    <td width="300"> The host entry did not contain proxy authentication when required by the proxy server.</td>
 *    <td width="300"> 407 Proxy Authentication Required</td>
 * </tr>
 * <tr>
 *    <td width="300"> SOLCLIENT_SUBCODE_PROXY_AUTH_FAILURE</td>
-*    <td width="300"> The host entry did contained invalid proxy authentication when required by the proxy server</td>
+*    <td width="300"> The host entry did contained invalid proxy authentication when required by the proxy server.</td>
 *    <td width="300"> 407 Proxy Authentication Required</td>
 * </tr>
 * <tr>
 *     <td width="300"> SOLCLIENT_SUBCODE_NO_SUBSCRIPTION_MATCH </td>
 *     <td width="300"> The client attempted to publish a guaranteed message to a topic that did not have any guaranteed subscription matches or only matched a replicated topic. </td>
 *     <td width="300"> 503 No Subscription Match </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_SUBSCRIPTION_MATCH_ERROR </td>
+*     <td width="300"> The client attempted to bind to a non-exclusive topic endpoint that is already bound with a different subscription.</td>
+*     <td width="300"> 503 Subscription Does Not Match </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_SELECTOR_MATCH_ERROR </td>
+*     <td width="300"> The client attempted to bind to a non-exclusive topic endpoint that is already bound with a different ingress selector.</td>
+*     <td width="300"> 503 Selector Does Not Match </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_NOT_SUPPORTED </td>
+*     <td width="300"> Replay is not supported in the Solace Message Router. </td>
+*     <td width="300"> N/A </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_DISABLED </td>
+*     <td width="300"> Replay is not enabled in the message-vpn. </td>
+*     <td width="300"> 503 Replay Disabled </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_NON_EXCLUSIVE_NOT_ALLOWED </td>
+*     <td width="300"> The client attempted to start replay on a flow bound to a non-exclusive endpoint. </td>
+*     <td width="300"> 403 Client Initiated Replay Not Allowed on Non-Exclusive Topic Endpoint, 403 Client Initiated Replay Not Allowed on Non-Exclusive Queue </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_INACTIVE_FLOW_NOT_ALLOWED </td>
+*     <td width="300"> The client attempted to start replay on an inactive flow. </td>
+*     <td width="300"> 403 Client Initiated Replay from Inactive Flow Not Allowed</td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_BROWSER_FLOW_NOT_ALLOWED </td>
+*     <td width="300"> The client attempted to bind with both ::SOLCLIENT_FLOW_PROP_BROWSER enabled and ::SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION set. </td>
+*     <td width="300"> 403 Client Initiated Replay from Browser Flow Not Allowed </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_TEMPORARY_NOT_SUPPORTED  </td>
+*     <td width="300"> Replay is not supported on temporary endpoints. </td>
+*     <td width="300"> 403 Replay Not Supported on Temporary Queue, 403 Replay Not Supported on Temporary Topic Endpoint </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_UNKNOWN_START_LOCATION_TYPE  </td>
+*     <td width="300"> The client attempted to start a replay but provided an unknown start location type. </td>
+*     <td width="300"> 403 Unknown Start Location Type </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_CANCELLED </td>
+*     <td width="300"> A replay in progress on a flow was administratively cancelled, causing the flow to be unbound. </td>
+*     <td width="300"> 503 Replay Cancelled </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_MESSAGE_UNAVAILABLE                     </td>
+*     <td width="300"> A replay in progress on a flow failed because messages to be replayed were trimmed from the replay log. </td>
+*     <td width="300"> 503 Replay Message Unavailable </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_STARTED                     </td>
+*     <td width="300"> A replay was started on the queue/topic endpoint, either by another client or by an adminstrator on the message router. </td>
+*     <td width="300"> 503 Replay Started </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_START_TIME_NOT_AVAILABLE                </td>
+*     <td width="300"> A replay was requested but the requested start time is not available in the replay log. </td>
+*     <td width="300"> 503 Replay Start Time Not Available </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_MESSAGE_REJECTED                        </td>
+*     <td width="300"> The Solace Message Router attempted to replay a message, but the queue/topic endpoint rejected the message to the sender. </td>
+*     <td width="300"> 503 Replayed Message Rejected by Queue, 503 Replayed Message Rejected by Topic Endpoint </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_LOG_MODIFIED                            </td>
+*     <td width="300"> A replay in progress on a flow failed because the replay log was modified. </td>
+*     <td width="300"> 503 Replay Log Modified </td>
+* </tr>
+
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_MISMATCHED_ENDPOINT_ERROR_ID                   </td>
+*     <td width="300"> Endpoint error ID in the bind request does not match the endpoint's error ID. </td>
+*     <td width="300"> 503 Mismatched Endpoint Error ID </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_OUT_OF_REPLAY_RESOURCES                        </td>
+*     <td width="300"> A replay was requested, but the router does not have sufficient resources to fulfill the request, due to too many active replays. </td>
+*     <td width="300"> 503 Out of Replay Resources </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_TOPIC_OR_SELECTOR_MODIFIED_ON_DURABLE_TOPIC_ENDPOINT </td>
+*     <td width="300"> A replay was in progress on a Durable Topic Endpoint (DTE) when its topic or selector was modified, causing the replay to fail. </td>
+*     <td width="300"> 503 Topic or Selector Modified on Durable Topic Endpoint </td>
+* </tr>
+
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_REPLAY_FAILED                                  </td>
+*     <td width="300"> A replay in progress on a flow failed. </td>
+*     <td width="300"> 503 Replay Failed </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_COMPRESSED_SSL_NOT_SUPPORTED </td>
+*     <td width="300"> The client attempted to establish a Session or Flow with ssl and compression, but the capability is not supported by the appliance.</td>
+*     <td width="300"> N/A </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED </td>
+*     <td width="300"> The client attempted to add a shared subscription, but the capability is not supported by the appliance.</td>
+*     <td width="300"> N/A </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_NOT_ALLOWED </td>
+*     <td width="300"> The client attempted to add a shared subscription on a client that is not permitted to use shared subscriptions.</td>
+*     <td width="300"> 403 Shared Subscription Permission Denied </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_ENDPOINT_NOT_ALLOWED </td>
+*     <td width="300"> The client attempted to add a shared subscription to a queue or topic endpoint.</td>
+*     <td width="300"> 403 Shared Subscriptions Not Supported On Queues, 403 Shared Subscriptions Not Supported On Topic Endpoints </td>
+* </tr>
+* <tr>
+*     <td width="300"> SOLCLIENT_SUBCODE_OBJECT_DESTROYED</td>
+*     <td width="300"> The operation cannot be completed because the object (context, session, flow) for the method has been destroyed in another thread.</td> 
+*     <td width="300"> N/A </td>
 * </tr>
 * </table>
 */
@@ -1453,7 +1564,7 @@ typedef struct solClient_field {
     SOLCLIENT_SUBCODE_CONTAINER_BUSY                    = 42, /**< An attempt was made to add a field to a map or stream while a sub map or stream is being built. */
     SOLCLIENT_SUBCODE_INVALID_DATA_CONVERSION           = 43, /**< An attempt was made to retrieve structured data with wrong type. */
     SOLCLIENT_SUBCODE_CANNOT_MODIFY_WHILE_NOT_IDLE      = 44, /**< An attempt was made to modify a property that cannot be modified while Session is not idle. */
-    SOLCLIENT_SUBCODE_MSG_VPN_NOT_ALLOWED               = 45, /**< The Message VPN name set for the Session is not allowed for the Session's username. */
+    SOLCLIENT_SUBCODE_MSG_VPN_NOT_ALLOWED               = 45, /**< The Message VPN name configured for the session does not exist. */
     SOLCLIENT_SUBCODE_CLIENT_NAME_INVALID               = 46, /**< The client name chosen has been rejected as invalid by the appliance. */
     SOLCLIENT_SUBCODE_MSG_VPN_UNAVAILABLE               = 47, /**< The Message VPN name set for the Session (or the default Message VPN, if none was set) is currently shutdown on the appliance. */
     SOLCLIENT_SUBCODE_CLIENT_USERNAME_IS_SHUTDOWN       = 48, /**< The username for the client is administratively shutdown on the appliance. */
@@ -1494,7 +1605,7 @@ typedef struct solClient_field {
     SOLCLIENT_SUBCODE_SUBSCRIPTION_MANAGER_DENIED       = 80,  /**< An attempt was made to add a subscription to another client when Session does not have subscription manager privileges. */
     SOLCLIENT_SUBCODE_UNKNOWN_CLIENT_NAME               = 81,  /**< An attempt was made to add a subscription to another client that is unknown on the appliance. */
     SOLCLIENT_SUBCODE_QUOTA_OUT_OF_RANGE                = 82,  /**< An attempt was made to provision an endpoint with a quota that is out of range. */
-    SOLCLIENT_SUBCODE_SUBSCRIPTION_ATTRIBUTES_CONFLICT  = 83,  /**< The client attempted to add a subscription which already exists but it has different properties, see ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE */
+    SOLCLIENT_SUBCODE_SUBSCRIPTION_ATTRIBUTES_CONFLICT  = 83,  /**< The client attempted to add a subscription which already exists but it has different properties  */
     SOLCLIENT_SUBCODE_INVALID_SMF_MESSAGE               = 84, /**< The client attempted to send a Solace Message Format (SMF) message using solClient_session_sendSmf() or solClient_session_sendMultipleSmf(), but the buffer did not contain a Direct message. */
     SOLCLIENT_SUBCODE_NO_LOCAL_NOT_SUPPORTED            = 85, /**< The client attempted to establish a Session or Flow with No Local enabled and the capability is not supported by the appliance. */
     SOLCLIENT_SUBCODE_UNSUBSCRIBE_NOT_ALLOWED_CLIENTS_BOUND = 86,  /**< The client attempted to unsubscribe a Topic from a Topic Endpoint while there were still Flows bound to the endpoint. */
@@ -1538,14 +1649,39 @@ typedef struct solClient_field {
     SOLCLIENT_SUBCODE_COMMIT_OR_ROLLBACK_IN_PROGRESS                 = 124, /**< The client attempted to send/receive a message or commit/rollback a transaction when a transaction commit/rollback is in progress. */
     SOLCLIENT_SUBCODE_UNBIND_RESPONSE_LOST                           = 125, /**< The application called solClient_flow_destroy() and the unbind-response was not received. */
     SOLCLIENT_SUBCODE_MAX_TRANSACTIONS_EXCEEDED                      = 126, /**< The client failed to open a Transacted Session as the maximum number of transactions was exceeded.*/
-    SOLCLIENT_SUBCODE_COMMIT_STATUS_UNKNOWN                          = 127, /**< The commit response was lost due to a transport layer reconnection to an alternate host in the host list */
-    SOLCLIENT_SUBCODE_PROXY_AUTH_REQUIRED                            = 128, /**< The host entry did not contain proxy authentication when required by the proxy server */
-    SOLCLIENT_SUBCODE_PROXY_AUTH_FAILURE                             = 129, /**< The host entry contained invalid proxy authentication when required by the proxy server */
+    SOLCLIENT_SUBCODE_COMMIT_STATUS_UNKNOWN                          = 127, /**< The commit response was lost due to a transport layer reconnection to an alternate host in the host list. */
+    SOLCLIENT_SUBCODE_PROXY_AUTH_REQUIRED                            = 128, /**< The host entry did not contain proxy authentication when required by the proxy server. */
+    SOLCLIENT_SUBCODE_PROXY_AUTH_FAILURE                             = 129, /**< The host entry contained invalid proxy authentication when required by the proxy server. */
     SOLCLIENT_SUBCODE_NO_SUBSCRIPTION_MATCH                          = 130, /**< The client attempted to publish a guaranteed message to a topic that did not have any guaranteed subscription matches or only matched a replicated topic.*/
+    SOLCLIENT_SUBCODE_SUBSCRIPTION_MATCH_ERROR                       = 131, /**< The client attempted to bind to a non-exclusive topic endpoint that is already bound with a different subscription.*/
+    SOLCLIENT_SUBCODE_SELECTOR_MATCH_ERROR                           = 132, /**< The client attempted to bind to a non-exclusive topic endpoint that is already bound with
+    a different ingress selector.*/
+    SOLCLIENT_SUBCODE_REPLAY_NOT_SUPPORTED                           = 133, /**< Replay is not supported on the Solace Message Router. */
+    SOLCLIENT_SUBCODE_REPLAY_DISABLED                                = 134, /**< Replay is not enabled in the message-vpn. */
+    SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_NON_EXCLUSIVE_NOT_ALLOWED = 135, /**< The client attempted to start replay on a flow bound to a non-exclusive endpoint. */
+    SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_INACTIVE_FLOW_NOT_ALLOWED = 136, /**< The client attempted to start replay on an inactive flow. */
+    SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_BROWSER_FLOW_NOT_ALLOWED = 137, /**< The client attempted to bind with both ::SOLCLIENT_FLOW_PROP_BROWSER enabled and ::SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION set. */
+    SOLCLIENT_SUBCODE_REPLAY_TEMPORARY_NOT_SUPPORTED                 = 138, /**< Replay is not supported on temporary endpoints. */
+    SOLCLIENT_SUBCODE_UNKNOWN_START_LOCATION_TYPE                    = 139, /**< The client attempted to start a replay but provided an unknown start location type. */
+    SOLCLIENT_SUBCODE_REPLAY_MESSAGE_UNAVAILABLE                     = 140, /**< A replay in progress on a flow failed because messages to be replayed were trimmed from the replay log. */
+    SOLCLIENT_SUBCODE_REPLAY_STARTED                                 = 141, /**< A replay was started on the queue/topic endpoint, either by another client or by an adminstrator on the message router. */
+    SOLCLIENT_SUBCODE_REPLAY_CANCELLED                               = 142, /**< A replay in progress on a flow was administratively cancelled, causing the flow to be unbound. */
+    SOLCLIENT_SUBCODE_REPLAY_START_TIME_NOT_AVAILABLE                = 143, /**< A replay was requested but the requested start time is not available in the replay log. */
+    SOLCLIENT_SUBCODE_REPLAY_MESSAGE_REJECTED                        = 144, /**< The Solace Message Router attempted to replay a message, but the queue/topic endpoint rejected the message to the sender. */
+    SOLCLIENT_SUBCODE_REPLAY_LOG_MODIFIED                            = 145, /**< A replay in progress on a flow failed because the replay log was modified. */
+    SOLCLIENT_SUBCODE_MISMATCHED_ENDPOINT_ERROR_ID                   = 146, /**< Endpoint error ID in the bind request does not match the endpoint's error ID. */
+    SOLCLIENT_SUBCODE_OUT_OF_REPLAY_RESOURCES                        = 147, /**< A replay was requested, but the router does not have sufficient resources to fulfill the request, due to too many active replays. */
+    SOLCLIENT_SUBCODE_TOPIC_OR_SELECTOR_MODIFIED_ON_DURABLE_TOPIC_ENDPOINT = 148, /**< A replay was in progress on a Durable Topic Endpoint (DTE) when its topic or selector was modified, causing the replay to fail. */
+    SOLCLIENT_SUBCODE_REPLAY_FAILED                                  = 149, /**< A replay in progress on a flow failed. */
+    SOLCLIENT_SUBCODE_COMPRESSED_SSL_NOT_SUPPORTED                   = 150, /**< The client attempted to establish a Session or Flow with ssl and compression, but the capability is not supported by the appliance.*/
+    SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED             = 151, /**< The client attempted to add a shared subscription, but the capability is not supported by the appliance.*/
+    SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_NOT_ALLOWED               = 152, /**< The client attempted to add a shared subscription on a client that is not permitted to use shared subscriptions. */
+    SOLCLIENT_SUBCODE_SHARED_SUBSCRIPTIONS_ENDPOINT_NOT_ALLOWED      = 153, /**< The client attempted to add a shared subscription to a queue or topic endpoint. */
+    SOLCLIENT_SUBCODE_OBJECT_DESTROYED                               = 154, /**< The operation cannot be completed because the object (context, session, flow) for the method has been destroyed in another thread. */
     /*
-   * ADDING NEW SUBCODES: When adding a new subcode always add a new entry to the HTML table in 
-   * the comment above this enumeration 
-   */
+     * ADDING NEW SUBCODES: When adding a new subcode always add a new entry to the HTML table in 
+     * the comment above this enumeration 
+     */
   } solClient_subCode_t;                                      /**< Type for API sub codes. */
 
 /**
@@ -1668,7 +1804,6 @@ typedef struct solClient_field {
  * and solClient_session_topicUnsubscribeExt().
  */
 #define SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM        (0x02) /**< The subscribe/unsubscribe call blocks until a confirmation is received. @see @ref blocking-context "Threading Effects on Blocking Modes" for more information about setting subscribe flags in the Context thread.*/
-#define SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE (0x04) /**< This flag, when present in a subscription ADD request, overrides the deliver-to-one property in a message (see ::solClient_msg_setDeliverToOne()) - If the Topic in the message matches, it is delivered to clients with ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE set, in addition to any one client that is subscribed to the Topic without this override. */
 #define SOLCLIENT_SUBSCRIBE_FLAGS_LOCAL_DISPATCH_ONLY   (0x08) /**< For the @ref topic-dispatch "topic dispatch" feature, this flag indicates the subscription should only be added to the dispatch table and should not be added to the appliance. */
 #define SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM       (0x10) /**< Requests a confirmation for the subscribe/unsubscribe operation. This bit is implied by ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM. If ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM is not set when this flag is set, then a confirmation event will be issued through the Session event callback procedure. */
 /*@}*/
@@ -1753,12 +1888,14 @@ typedef struct solClient_uuid
   typedef enum solClient_flow_event
   {
     SOLCLIENT_FLOW_EVENT_UP_NOTICE = 0,            /**< The Flow is established. */
-    SOLCLIENT_FLOW_EVENT_DOWN_ERROR = 1,           /**< The Flow was established and then disconnected by the appliance, likely due to operator intervention. The Flow must be destroyed. */
+    SOLCLIENT_FLOW_EVENT_DOWN_ERROR = 1,           /**< The Flow was established and then disconnected by the broker, due to an operator action. The Flow must be destroyed. */
     SOLCLIENT_FLOW_EVENT_BIND_FAILED_ERROR = 2,    /**< The Flow attempted to connect but was unsuccessful. */
     SOLCLIENT_FLOW_EVENT_REJECTED_MSG_ERROR = 3,   /**< This event is deprecated and will never be raised. */
     SOLCLIENT_FLOW_EVENT_SESSION_DOWN       = 4,   /**< The Session for the Flow was disconnected. The Flow will rebound automatically when the Session is reconnected.*/
     SOLCLIENT_FLOW_EVENT_ACTIVE             = 5,   /**< The flow has become active */
-    SOLCLIENT_FLOW_EVENT_INACTIVE           = 6    /**< The flow has become inactive */
+    SOLCLIENT_FLOW_EVENT_INACTIVE           = 6,   /**< The flow has become inactive */
+    SOLCLIENT_FLOW_EVENT_RECONNECTING       = 7,   /**< The Flow was established and then disconnected by the broker, due to operator action, either 'Replay Started' or 'shutdown' on the queue, topic endpoint, or message spool.  The API is attempting to reconnect the flow automatically */
+    SOLCLIENT_FLOW_EVENT_RECONNECTED        = 8    /**< The Flow was successfully reconnected to the broker */
   } solClient_flow_event_t;                        /**< Type for Flow events. */
 
 /** 
@@ -1797,13 +1934,26 @@ typedef struct solClient_uuid
 #define SOLCLIENT_GLOBAL_PROP_DBQUANTASIZE_3 "GLOBAL_DBQUANTA_SIZE_3" /**< \ref globalProps "The size (in bytes) of data buffers in the fourth pool of buffers." The valid range is > 0. Default: ::SOLCLIENT_GLOBAL_PROP_DEFAULT_DBQUANTASIZE_3 */
 #define SOLCLIENT_GLOBAL_PROP_DBQUANTASIZE_4 "GLOBAL_DBQUANTA_SIZE_4" /**< \ref globalProps "The size (in bytes) of data buffers in the fifth (last) pool of buffers." The valid range is > 0. Default: ::SOLCLIENT_GLOBAL_PROP_DEFAULT_DBQUANTASIZE_4 */
 #define SOLCLIENT_GLOBAL_PROP_MAXPOOLMEM     "GLOBAL_MAXPOOLMEM"      /**< \ref globalProps "The maximum amount of memory (in bytes) the API can save in its data and message pools." Once it reaches this size, data blocks are released back to the heap and are not kept in a API pool. */
-#define SOLCLIENT_GLOBAL_PROP_GSS_KRB_LIB "GLOBAL_GSS_KRB_LIB"  /**< \ref globalProps The GSS Kerberos library name. 
+#define SOLCLIENT_GLOBAL_PROP_GSS_KRB_LIB "GLOBAL_GSS_KRB_LIB"  /**< \ref globalProps "The GSS Kerberos library name."
       Default: \n
       @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_LINUX for Linux.
       @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_SOLARIS for Solaris.
-      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_WINDOWS for Windows.*/
-#define SOLCLIENT_GLOBAL_PROP_IBM_CODESET "GLOBAL_IBM_CODESET" /**< Only valid on the S390x/TPF mainframe. This selects the EBCDIC character set in use by the application. Default: ::SOLCLIENT_GLOBAL_PROP_DEFAULT_IBM_CODESET. */
-  /*@}*/
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_WINDOWS for Windows.
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_AIX for AIX.*/
+#define SOLCLIENT_GLOBAL_PROP_IBM_CODESET "GLOBAL_IBM_CODESET" /**< Only valid on the z/TPF mainframe. This selects the EBCDIC character set in use by the application. Default: ::SOLCLIENT_GLOBAL_PROP_DEFAULT_IBM_CODESET. */
+#define SOLCLIENT_GLOBAL_PROP_SSL_LIB        "GLOBAL_SSL_LIB"         /**< \ref globalProps "The TLS (Transport Layer Security) and SSL (Secure Sockets Layer) library name." 
+      Default: \n
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_UNIX for Unix (including Linux and AIX).
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_MACOSX for MacOSX.
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_VMS for OpenVMS.
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_WINDOWS for Windows.*/
+#define SOLCLIENT_GLOBAL_PROP_CRYPTO_LIB     "GLOBAL_CRYPTO_LIB"      /**< \ref globalProps "The Cryptography library name, this library contains ciphers and algorithms used by ::SOLCLIENT_GLOBAL_PROP_SSL_LIB"
+      Default: \n
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_UNIX for Unix (including Linux and AIX).
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_MACOSX for MacOSX.
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_VMS for OpenVMS.
+      @li ::SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_WINDOWS for Windows.*/
+/*@}*/
 
 /** @name Default global configuration properties
 * The default values for global configuration properties that are not explicitly set.
@@ -1818,8 +1968,16 @@ typedef struct solClient_uuid
 #define SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_LINUX "libgssapi_krb5.so.2" /**< The default GSS Kerberos library name for Linux. */
 #define SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_SOLARIS "mech_krb5.so.1"    /**< The default GSS Kerberos library name for Solaris. */
 #define SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_WINDOWS "secur32.dll"       /**< The default GSS Kerberos library name for Windows. */
-#define SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_AIX "libgssapi_krb5.a(libgssapi_krb5.a.so)" /**< The default GSS Kerberos library name for AIX. */
-#define SOLCLIENT_GLOBAL_PROP_DEFAULT_IBM_CODESET       "TPF_CCSID_IBM1047" /**< The default IBM character set in use by the application */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_GSS_KRB_LIB_AIX    "libgssapi_krb5.a(libgssapi_krb5.a.so)" /**< The default GSS Kerberos library name for AIX. */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_IBM_CODESET        "TPF_CCSID_IBM1047"  /**< The default IBM character set in use by the application */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_UNIX       "libssl.so"          /**< The default SSL library name for Unix (including Linux and AIX) */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_MACOSX     "libssl.dylib"       /**< The default SSL library name for MacOSX */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_VMS        "SSL1$LIBSSL_SHR.EXE"      /**< The default SSL library name for OpenVMS */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_SSL_LIB_WINDOWS    "libssl-1_1.dll"       /**< The default SSL library name for Windows */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_UNIX    "libcrypto.so"       /**< The default crypto library name for Unix (including Linux and AIX). */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_MACOSX  "libcrypto.dylib"    /**< The default crypto library name for MacOSX. */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_VMS     "SSL1$LIBCRYPTO_SHR.EXE"   /**< The default crypto library name for OpenVMS. */
+#define SOLCLIENT_GLOBAL_PROP_DEFAULT_CRYPTO_LIB_WINDOWS "libcrypto-1_1.dll"      /**< The default crypto library name for Windows. */
 
 /*@}*/
 
@@ -1869,11 +2027,11 @@ solClient_dllExport extern const char *_solClient_contextPropsDefaultWithCreateT
 /*@{*/
 #define SOLCLIENT_SESSION_PROP_USERNAME                      "SESSION_USERNAME" /**< The username required for authentication. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_USERNAME */
 #define SOLCLIENT_SESSION_PROP_PASSWORD                      "SESSION_PASSWORD" /**< The password required for authentication. May be set as an environment variable (See @ref SessionProps). Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_PASSWORD */
-#define SOLCLIENT_SESSION_PROP_HOST                          "SESSION_HOST"     /**< The IP address (or host name) to connect to. @ref host-list "Multiple entries" (up to ::SOLCLIENT_SESSION_PROP_MAX_HOSTS) are allowed, separated by commas. @ref host-entry "The entry for the SOLCLIENT_SESSION_PROP_HOST property should provide a protocol, host, and port". See @ref host-list "Configuring Multiple Hosts for Redundancy and Failover" for a discussion of Guaranteed Messaging considerations. May be set as an environment variable (See @ref SessionProps). Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_HOST */
+#define SOLCLIENT_SESSION_PROP_HOST                          "SESSION_HOST"     /**< The IPv4 or IPv6 address or host name to connect to. @ref host-list "Multiple entries" (up to ::SOLCLIENT_SESSION_PROP_MAX_HOSTS) are allowed, separated by commas. @ref host-entry "The entry for the SOLCLIENT_SESSION_PROP_HOST property should provide a protocol, host, and port". See @ref host-list "Configuring Multiple Hosts for Redundancy and Failover" for a discussion of Guaranteed Messaging considerations. May be set as an environment variable (See @ref SessionProps). Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_HOST */
 #define SOLCLIENT_SESSION_PROP_PORT                          "SESSION_PORT"     /**< Deprecated. While still supported, the port number can also now be specified as part of the host in ::SOLCLIENT_SESSION_PROP_HOST (for example, "hostname:55555"). In general, port numbers are not needed except in special situations, because the API chooses the correct port to connect to the appliance. If ::SOLCLIENT_SESSION_PROP_PORT is set, this port number is used for all entries in ::SOLCLIENT_SESSION_PROP_HOST that do not explicitly specify port. The port number to connect to. The valid range is 1..65535. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_PORT or ::SOLCLIENT_SESSION_PROP_DEFAULT_PORT_COMPRESSION, based on setting of ::SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL */
 #define SOLCLIENT_SESSION_PROP_BUFFER_SIZE                   "SESSION_BUFFER_SIZE" /**< The maximum amount of messages to buffer (in bytes) when the TCP session is flow controlled (see \ref message-buffer "Message Buffer Size Configuration"). The valid range is > 0. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_BUFFER_SIZE */
 #define SOLCLIENT_SESSION_PROP_CONNECT_BLOCKING              "SESSION_CONNECT_BLOCKING" /**< Use ::SOLCLIENT_PROP_ENABLE_VAL to enable blocking connect operation. A blocking connect operation suspends until the Session is successfully connected, including restoring all remembered subscriptions if ::SOLCLIENT_SESSION_PROP_REAPPLY_SUBSCRIPTIONS is enabled. Otherwise solClient_session_connect() returns SOLCLIENT_IN_PROGRESS. @see @ref blocking-context "Threading Effects on Blocking Modes" for a discussion of blocking operation in the Context thread. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_CONNECT_BLOCKING */
-#define SOLCLIENT_SESSION_PROP_SEND_BLOCKING                 "SESSION_SEND_BLOCKING" /**< Use ::SOLCLIENT_PROP_ENABLE_VAL to enable blocking send operation. A blocking send operation suspends when the Session is transport flow controlled, otherwise the send operation returns SOLCLIENT_WOULD_BLOCK. Successful return from a blocking send operation only means the message has been accepted by the transport, it does not guaranteed the message has been processed by the appliance. For the latter you must used Guaranteed Message Delivery mode. @see @ref blocking-context "Threading Effects on Blocking Modes" for a discussion of blocking operation in the Context thread. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SEND_BLOCKING */
+#define SOLCLIENT_SESSION_PROP_SEND_BLOCKING                 "SESSION_SEND_BLOCKING" /**< Use ::SOLCLIENT_PROP_ENABLE_VAL to enable blocking send operation. A blocking send operation suspends when the Session is transport flow controlled, otherwise the send operation returns SOLCLIENT_WOULD_BLOCK. Successful return from a blocking send operation only means the message has been accepted by the transport, it does not guarantee the message has been processed by the appliance. For the latter you must used Guaranteed Message Delivery mode and wait for the session event (::SOLCLIENT_SESSION_EVENT_ACKNOWLEDGEMENT)  that acknowledges the message. @see @ref blocking-context "Threading Effects on Blocking Modes" for a discussion of blocking operation in the Context thread. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SEND_BLOCKING */
 #define SOLCLIENT_SESSION_PROP_SUBSCRIBE_BLOCKING            "SESSION_SUBSCRIBE_BLOCKING" /**< Use ::SOLCLIENT_PROP_ENABLE_VAL to enable blocking subscribe/unsubscribe operation. A blocking subscribe operation will suspend when the Session is transport flow controlled, otherwise the subscribe operation returns SOLCLIENT_WOULD_BLOCK. A successful return from a blocking subscribe operation only means the subscription has been accepted by the transport, it does not guarantee the subscription has been processed by the appliance. For the latter you must use a confirmed operation (see ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM)  @see @ref blocking-context "Threading Effects on Blocking Modes" for a discussion of blocking operation in the Context thread. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SUBSCRIBE_BLOCKING */
 #define SOLCLIENT_SESSION_PROP_BLOCK_WHILE_CONNECTING        "SESSION_BLOCK_WHILE_CONNECTING" /**< Use ::SOLCLIENT_PROP_ENABLE_VAL to block the calling thread on operations such as sending a message, subscribing, or unsubscribing when the Session is being connected or reconnected. The operation must already be blocking (see ::SOLCLIENT_SESSION_PROP_SEND_BLOCKING and ::SOLCLIENT_SESSION_PROP_SUBSCRIBE_BLOCKING). Otherwise, ::SOLCLIENT_NOT_READY is returned if the Session is being connected. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_BLOCK_WHILE_CONNECTING */ 
 #define SOLCLIENT_SESSION_PROP_BLOCKING_WRITE_TIMEOUT_MS     "SESSION_WRITE_TIMEOUT_MS" /**< The timeout period (in milliseconds) for blocking write operation. The valid range is > 0. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_BLOCKING_WRITE_TIMEOUT_MS */
@@ -1896,9 +2054,11 @@ solClient_dllExport extern const char *_solClient_contextPropsDefaultWithCreateT
 #define SOLCLIENT_SESSION_PROP_VPN_NAME                      "SESSION_VPN_NAME"    /**< The name of the Message VPN to attempt to join when connecting to an appliance running SolOS-TR. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_VPN_NAME */
 #define SOLCLIENT_SESSION_PROP_VPN_NAME_IN_USE               "SESSION_VPN_NAME_IN_USE"    /**< A read-only Session property that indicates which Message VPN the Session is connected to. When not connected, an empty string is returned. */
 #define SOLCLIENT_SESSION_PROP_CLIENT_NAME                   "SESSION_CLIENT_NAME" /**< The Session client name that is used during client login to create a unique Session. An empty string causes a unique client name to be generated automatically. If specified, it must be a valid Topic name, and a maximum of 160 bytes in length. For all appliances (SolOS-TR or SolOS-CR) the SOLCLIENT_SESSION_PROP_CLIENT_NAME is also used to uniquely identify the sender in a message's senderId field if ::SOLCLIENT_SESSION_PROP_GENERATE_SENDER_ID is set. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_CLIENT_NAME */
-#define SOLCLIENT_SESSION_PROP_SUBSCRIBER_LOCAL_PRIORITY     "SESSION_SUBSCRIBER_LOCAL_PRIORITY" /**< Subscriber priorities are used to choose a client to receive messages that are sent with the ::SOLCLIENT_SEND_FLAGS_DELIVER_TO_ONE property set. These messages are sent to the subscriber with the highest priority. Subscribers have two priorities; this priority is for messages published locally. The valid range is 1..4. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SUBSCRIBER_LOCAL_PRIORITY */
-#define SOLCLIENT_SESSION_PROP_SUBSCRIBER_NETWORK_PRIORITY   "SESSION_SUBSCRIBER_NETWORK_PRIORITY" /**< Subscriber priorities are used to choose a client to receive messages that are sent with the ::SOLCLIENT_SEND_FLAGS_DELIVER_TO_ONE property set. These messages are sent to the subscriber with the highest priority. Subscribers have two priorities; this priority is for messages published on appliances other than the one that the client is connected to. The valid range is 1..4. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SUBSCRIBER_NETWORK_PRIORITY */
-#define SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL             "SESSION_COMPRESSION_LEVEL"  /**< Enables messages to be compressed with ZLIB before transmission and decompressed on receive. The valid range is 0 (off) or 1..9, where 1 is less compression (fastest) and 9 is most compression (slowest). Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_COMPRESSION_LEVEL */
+#define SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL             "SESSION_COMPRESSION_LEVEL"  /**< Enables messages to be compressed with ZLIB before transmission and decompressed on receive. The valid range is 0 (off) or 1..9, where 1 is less compression (fastest) and 9 is most compression (slowest). Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_COMPRESSION_LEVEL
+
+Note: If no port is specified in the SESSION_HOST property, the API will automatically connect to either the default non-compressed listen port (55555)
+or default compressed listen port (55003) based on the specified COMPRESSION_LEVEL. If a port is specified in the SESSION_HOST property you must
+specify the non-compressed listen port if not using compression (compression level 0) or the compressed listen port if using compression (compression levels 1 to 9). */
 #define SOLCLIENT_SESSION_PROP_GENERATE_RCV_TIMESTAMPS       "SESSION_RCV_TIMESTAMP"  /**< When enabled, a receive timestamp is recorded for each message and passed to the application callback in the rxCallbackInfo_t structure. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_GENERATE_RCV_TIMESTAMPS */
 #define SOLCLIENT_SESSION_PROP_GENERATE_SEND_TIMESTAMPS      "SESSION_SEND_TIMESTAMP" /**< When enabled, a send timestamp is automatically included (if not already present) in the Solace-defined fields for each message sent. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_GENERATE_SEND_TIMESTAMPS */ 
 #define SOLCLIENT_SESSION_PROP_GENERATE_SENDER_ID            "SESSION_SEND_SENDER_ID" /**< When enabled, a sender ID is automatically included (if not already present) in the Solace-defined fields for each message sent. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_GENERATE_SENDER_ID */ 
@@ -1930,10 +2090,13 @@ The valid range is >=0. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_RECONNECT_RETR
 #define SOLCLIENT_SESSION_PROP_ACK_EVENT_MODE                 "SESSION_ACK_EVENT_MODE"              /**< This property specifies if a session event ::SOLCLIENT_SESSION_EVENT_ACKNOWLEDGEMENT acknowledges a single message (see ::SOLCLIENT_SESSION_PROP_ACK_EVENT_MODE_PER_MSG) or a range of messages (see ::SOLCLIENT_SESSION_PROP_ACK_EVENT_MODE_WINDOWED).  Default: ::SOLCLIENT_SESSION_PROP_ACK_EVENT_MODE_PER_MSG. \n Setting this property to ::SOLCLIENT_SESSION_PROP_ACK_EVENT_MODE_WINDOWED will not affect RejectedMessageError events, they will still be emitted on a per message basis. */
 #define SOLCLIENT_SESSION_PROP_SSL_EXCLUDED_PROTOCOLS        "SESSION_SSL_EXCLUDED_PROTOCOLS"  /**< This property specifies a comma separated list of excluded SSL protocol(s). Valid SSL protocols are 'SSLv3', 'TLSv1', 'TLSv1.1', 'TLSv1.2'. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SSL_EXCLUDED_PROTOCOLS. */
 #define SOLCLIENT_SESSION_PROP_SSL_VALIDATE_CERTIFICATE      "SESSION_SSL_VALIDATE_CERTIFICATE"      /**< This property indicates if the certificate validation with certificates in the truststore is enabled. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SSL_VALIDATE_CERTIFICATE.  */
+#define SOLCLIENT_SESSION_PROP_OPENSSL_SECURITY_LEVEL      "SESSION_OPENSSL_SECURITY_LEVEL"      /**< A number from 0-5 passed to the openSsl library as the security level. Use 0 with caution, it is less secure than the default, which is 1. */
+
 #define SOLCLIENT_SESSION_PROP_SSL_CLIENT_CERTIFICATE_FILE           "SESSION_SSL_CLIENT_CERTIFICATE_FILE"         /**< This property specifies the client certificate file name. */
 #define SOLCLIENT_SESSION_PROP_SSL_CLIENT_PRIVATE_KEY_FILE           "SESSION_SSL_CLIENT_PRIVATE_KEY_FILE"  /**< This property specifies the client private key file name. */
 #define SOLCLIENT_SESSION_PROP_SSL_CLIENT_PRIVATE_KEY_FILE_PASSWORD  "SESSION_SSL_CLIENT_PRIVATE_KEY_FILE_PASSWORD"     /**< This property specifies the password used to encrypt the client private key file. */
-#define SOLCLIENT_SESSION_PROP_SSL_CONNECTION_DOWNGRADE_TO       "SESSION_SSL_CONNECTION_DOWNGRADE_TO"  /**< This property specifies a transport protocol that SSL connection will be downgraded to after client authentication. Allowed transport protocol is "PLAIN_TEXT". */
+#define SOLCLIENT_SESSION_PROP_SSL_CONNECTION_DOWNGRADE_TO       "SESSION_SSL_CONNECTION_DOWNGRADE_TO"  /**< This property specifies a transport protocol that SSL connection will be downgraded to after client authentication. Allowed transport protocol is "PLAIN_TEXT". May be combined with non-zero compression level to achieve compression without encryption. */
+#define SOLCLIENT_SESSION_PROP_INITIAL_RECEIVE_BUFFER_SIZE   "SESSION_INITIAL_RECEIVE_BUFFER_SIZE" /**< If not zero, the minimum starting size for the API receive buffer. Must be zero or >= 1024 and <=64*1024*1024 */
 #define SOLCLIENT_SESSION_PROP_AUTHENTICATION_SCHEME  "SESSION_AUTHENTICATION_SCHEME"   /**< This property specifies the authentication scheme. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_AUTHENTICATION_SCHEME. */
 #define SOLCLIENT_SESSION_PROP_KRB_SERVICE_NAME        "SESSION_KRB_SERVICE_NAME"  /**< This property specifies the first part of Kerberos Service Principal Name (SPN) of the form <i>ServiceName/Hostname\@REALM</i> (for Windows) or Host Based Service of the form <i>ServiceName\@Hostname</i> (for Linux and SunOS).
 Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_KRB_SERVICE_NAME.
@@ -1960,6 +2123,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
                                                                                                                      is allowed to be configured. There shall be no duplicates in the list. */
 #define SOLCLIENT_SESSION_PROP_TRANSPORT_PROTOCOL_DOWNGRADE_TIMEOUT_MS ("SESSION_TRANSPORT_PROTOCOL_DOWNGRADE_TIMEOUT_MS")  /**< Specifies how long to wait (in milliseconds) for a login response before moving to the next available protocol in a user specified or the default WEB Transport Protocol downgradelist.
                                                                                                                      Default ::SOLCLIENT_SESSION_PROP_DEFAULT_TRANSPORT_PROTOCOL_DOWNGRADE_TIMEOUT_MS */
+#define SOLCLIENT_SESSION_PROP_GUARANTEED_WITH_WEB_TRANSPORT          ("SESSION_GUARANTEED_WITH_WEB_TRANSPORT") /**< Enables guaranteed messaging with web transport protocols. Refer to \ref transportProtocol for supported transport protocols. Only has effect when a session is established over a web messaging transport. Default ::SOLCLIENT_SESSION_PROP_DEFAULT_GUARANTEED_WITH_WEB_TRANSPORT */
 #define SOLCLIENT_SESSION_PROP_GD_RECONNECT_FAIL_ACTION  "SESSION_GD_RECONNECT_FAIL_ACTION"       /**< A property to define the behavior when the CCSMP API is unable 
                                                                                                        to reconnect guaranteed delivery after reconnecting the session.
                                                                                                        This may occur if the session is configured with a host list where
@@ -1976,10 +2140,12 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
  * @name Session transport protocol types
  * Definition of the valid set of transport protocols when setting ::SOLCLIENT_SESSION_PROP_WEB_TRANSPORT_PROTOCOL, or returned
  * via the read-only session property ::SOLCLIENT_SESSION_WEB_PROP_TRANSPORT_PROTOCOL_IN_USE
+ * Note: the use of ::SOLCLIENT_SESSION_PROP_GUARANTEED_WITH_WEB_TRANSPORT effects what protocol are available for properties 
+ * ::SOLCLIENT_SESSION_PROP_WEB_TRANSPORT_PROTOCOL_LIST and ::SOLCLIENT_SESSION_PROP_WEB_TRANSPORT_PROTOCOL
  */
 /*@{*/
 #define SOLCLIENT_TRANSPORT_PROTOCOL_NULL                    ("")                      /**< An empty value for ::SOLCLIENT_SESSION_PROP_WEB_TRANSPORT_PROTOCOL means "use best available". An empty return value for ::SOLCLIENT_SESSION_PROP_WEB_TRANSPORT_PROTOCOL_IN_USE means not connected or not a web messaging session. */
-#define SOLCLIENT_TRANSPORT_PROTOCOL_WS_BINARY               ("WS_BINARY")             /**< Binary-encoded, using the WebSocket protocol */
+#define SOLCLIENT_TRANSPORT_PROTOCOL_WS_BINARY               ("WS_BINARY")             /**< Binary-encoded, using the WebSocket protocol, supports guaranteed web transport */
 #define SOLCLIENT_TRANSPORT_PROTOCOL_HTTP_BINARY_STREAMING   ("HTTP_BINARY_STREAMING") /**< Binary encoded, responses are received in streaming mode for higher efficiency */
 #define SOLCLIENT_TRANSPORT_PROTOCOL_HTTP_BINARY             ("HTTP_BINARY")           /**< Binary-encoded, responses are received in COMET style */
 /*@}*/
@@ -2012,8 +2178,8 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 */
 #define SOLCLIENT_SESSION_PROP_SSL_VALIDATE_CERTIFICATE_DATE    "SESSION_SSL_VALIDATE_CERTIFICATE_DATE"  /**< This property indicates if the session connection should fail when a certificate with an invalid date is received. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SSL_VALIDATE_CERTIFICATE_DATE. */
 #define SOLCLIENT_SESSION_PROP_SSL_CIPHER_SUITES      "SESSION_SSL_CIPHER_SUITES"    /**< This property specifies a comma separated list of the cipher suites. Allowed cipher suites are: 'ECDHE-RSA-AES256-GCM-SHA384', 'ECDHE-RSA-AES256-SHA384', 'ECDHE-RSA-AES256-SHA', 'AES256-GCM-SHA384', 'AES256-SHA256', 'AES256-SHA', 'ECDHE-RSA-DES-CBC3-SHA', 'DES-CBC3-SHA', 'ECDHE-RSA-AES128-GCM-SHA256', 'ECDHE-RSA-AES128-SHA256', 'ECDHE-RSA-AES128-SHA', 'AES128-GCM-SHA256', 'AES128-SHA256', 'AES128-SHA', 'RC4-SHA', 'RC4-MD5', 'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384', 'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384', 'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA', 'TLS_RSA_WITH_AES_256_GCM_SHA384', 'TLS_RSA_WITH_AES_256_CBC_SHA256', 'TLS_RSA_WITH_AES_256_CBC_SHA', 'TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA', 'SSL_RSA_WITH_3DES_EDE_CBC_SHA', 'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256', 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256', 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA', 'TLS_RSA_WITH_AES_128_GCM_SHA256', 'TLS_RSA_WITH_AES_128_CBC_SHA256', 'TLS_RSA_WITH_AES_128_CBC_SHA', 'SSL_RSA_WITH_RC4_128_SHA', 'SSL_RSA_WITH_RC4_128_MD5'. Default: ::SOLCLIENT_SESSION_PROP_DEFAULT_SSL_CIPHER_SUITES. */
-#define SOLCLIENT_SESSION_PROP_SSL_TRUST_STORE_DIR    "SESSION_SSL_TRUST_STORE_DIR"        /**< This property specifies the directory where the trusted certificates are. A maximum of 32 certificate files are allowed in the trust store directory. The maximum depth for the certificate chain verification that shall be allowed is 3. */
-#define SOLCLIENT_SESSION_PROP_SSL_TRUSTED_COMMON_NAME_LIST  "SESSION_SSL_TRUSTED_COMMON_NAME_LIST"    /**< This property specifies  a comma separated list of acceptable common names in certificate validation. The number of common names specified by an applications is limited to 16. If the application does not provide any common names, there is no common name verification. */
+#define SOLCLIENT_SESSION_PROP_SSL_TRUST_STORE_DIR    "SESSION_SSL_TRUST_STORE_DIR"        /**< This property specifies the directory where the trusted certificates are. A maximum of 64 certificate files are allowed in the trust store directory. The maximum depth for the certificate chain verification that shall be allowed is 3. */
+#define SOLCLIENT_SESSION_PROP_SSL_TRUSTED_COMMON_NAME_LIST  "SESSION_SSL_TRUSTED_COMMON_NAME_LIST"    /**< This property specifies  a comma separated list of acceptable common names in certificate validation. The number of common names specified by an applications is limited to 16. Leading and trailing whitespaces are considered to be part of the common names and are not ignored. If the application does not provide any common names, there is no common name verification. */
 /*@}*/
 
 /**
@@ -2050,7 +2216,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_SESSION_PROP_DEFAULT_HOST                          "127.0.0.1" /**< The default value for the appliance IP address. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_PORT                          "55555"     /**< The default value for the appliance TCP port when compression is not in use (::SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL of zero). */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_PORT_COMPRESSION              "55003"     /**< The default value for the appliance TCP port when compression is in use (::SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL of non-zero). */
-#define SOLCLIENT_SESSION_PROP_DEFAULT_PORT_SSL                      "55443"     /**< The default value for the appliance SSL port over TCP when compression is not in use (::SOLCLIENT_SESSION_PROP_COMPRESSION_LEVEL of zero). */
+#define SOLCLIENT_SESSION_PROP_DEFAULT_PORT_SSL                      "55443"     /**< The default value for the appliance SSL port over TCP regardless of compression. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_BUFFER_SIZE                   "90000"     /**< The default size (in bytes) of internal buffer for transmit buffering. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_CONNECT_BLOCKING              SOLCLIENT_PROP_ENABLE_VAL /**< The default is blocking connect operation. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_SEND_BLOCKING                 SOLCLIENT_PROP_ENABLE_VAL /**< The default is blocking send operation. */
@@ -2093,12 +2259,14 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_SESSION_PROP_DEFAULT_SSL_EXCLUDED_PROTOCOLS         ""         /**< The default value for ::SOLCLIENT_SESSION_PROP_SSL_EXCLUDED_PROTOCOLS*/
 #define SOLCLIENT_SESSION_PROP_DEFAULT_SSL_VALIDATE_CERTIFICATE     SOLCLIENT_PROP_ENABLE_VAL      /**< The default value for ::SOLCLIENT_SESSION_PROP_SSL_VALIDATE_CERTIFICATE. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_SSL_VALIDATE_CERTIFICATE_DATE   SOLCLIENT_PROP_ENABLE_VAL   /**< The default value for ::SOLCLIENT_SESSION_PROP_SSL_VALIDATE_CERTIFICATE_DATE. */
-#define SOLCLIENT_SESSION_PROP_DEFAULT_SSL_CIPHER_SUITES        "ECDHE-RSA-AES256-GCM-SHA384,ECDHE-RSA-AES256-SHA384,ECDHE-RSA-AES256-SHA,AES256-GCM-SHA384,AES256-SHA256,AES256-SHA,ECDHE-RSA-DES-CBC3-SHA,DES-CBC3-SHA,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES128-SHA256,ECDHE-RSA-AES128-SHA,DHE-RSA-AES128-GCM-SHA256,DHE-RSA-AES128-SHA256,AES128-GCM-SHA256,AES128-SHA256,AES128-SHA,RC4-SHA,RC4-MD5"  /**< The default value for ::SOLCLIENT_SESSION_PROP_SSL_CIPHER_SUITES. */
+#define SOLCLIENT_SESSION_PROP_DEFAULT_SSL_CIPHER_SUITES  ("ECDHE-RSA-AES256-GCM-SHA384,ECDHE-RSA-AES256-SHA384,ECDHE-RSA-AES256-SHA,AES256-GCM-SHA384,AES256-SHA256,AES256-SHA,ECDHE-RSA-DES-CBC3-SHA,DES-CBC3-SHA,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES128-SHA256,ECDHE-RSA-AES128-SHA,AES128-GCM-SHA256,AES128-SHA256,AES128-SHA,RC4-SHA,RC4-MD5") /**< The default value for ::SOLCLIENT_SESSION_PROP_SSL_CIPHER_SUITES. */
+#define SOLCLIENT_SESSION_PROP_DEFAULT_INITIAL_RECEIVE_BUFFER_SIZE "0" /**< The default value for ::SOLCLIENT_SESSION_PROP_INITIAL_RECEIVE_BUFFER_SIZE */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_AUTHENTICATION_SCHEME              SOLCLIENT_SESSION_PROP_AUTHENTICATION_SCHEME_BASIC   /**< The default value for ::SOLCLIENT_SESSION_PROP_AUTHENTICATION_SCHEME. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_KRB_SERVICE_NAME          "solace"                                 /**< The default for ::SOLCLIENT_SESSION_PROP_KRB_SERVICE_NAME. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_UNBIND_FAIL_ACTION       SOLCLIENT_SESSION_PROP_UNBIND_FAIL_ACTION_RETRY /**< The default value for ::SOLCLIENT_SESSION_PROP_UNBIND_FAIL_ACTION */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_WEB_TRANSPORT_PROTOCOL             SOLCLIENT_TRANSPORT_PROTOCOL_NULL          /**< The default value for web messaging Transport Protocol. Default is "use best available". */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_TRANSPORT_PROTOCOL_DOWNGRADE_TIMEOUT_MS  ("3000")                        /**< The default value for the Transport Protocol downgrade timeout in milliseconds.*/
+#define SOLCLIENT_SESSION_PROP_DEFAULT_GUARANTEED_WITH_WEB_TRANSPORT  SOLCLIENT_PROP_DISABLE_VAL                 /**< The default for enabling guaranteed messaging with web transports. */
 #define SOLCLIENT_SESSION_PROP_DEFAULT_GD_RECONNECT_FAIL_ACTION      SOLCLIENT_SESSION_PROP_GD_RECONNECT_FAIL_ACTION_AUTO_RETRY  /**< The default action when the CCSMP API is unable to reestablish the publisher flow is to complete the reconnect on the session. The CCSMP API will open a new publisher flow for the session,  which may lead to publishing duplicate messages.  */
 /*@}*/
 
@@ -2179,9 +2347,14 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_FLOW_PROP_TOPIC              "FLOW_TOPIC"                /**< When binding to a Topic endpoint, the Topic may be set in the bind. This parameter is ignored for Queue or subscriber binding. The maximum length (not including NULL terminator) is ::SOLCLIENT_BUFINFO_MAX_TOPIC_SIZE. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_TOPIC */
 #define SOLCLIENT_FLOW_PROP_MAX_BIND_TRIES     "FLOW_MAX_BIND_TRIES"       /**< When creating a non-blocking Flow, or a Flow that is bound due to Session-connect, the maximum number of bind attempts to make. The valid range is >= 1. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_MAX_BIND_TRIES */
 #define SOLCLIENT_FLOW_PROP_ACK_TIMER_MS       "FLOW_ACK_TIMER_MS"         /**< The duration of the Flow acknowledgment timer (in milliseconds). The valid range is 20..1500. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_ACK_TIMER_MS */
-#define SOLCLIENT_FLOW_PROP_ACK_THRESHOLD      "FLOW_ACK_THRESHOLD"        /**< The threshold for sending an acknowledgment, as a percentage of the Flow window size. The valid range is 1..75. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_ACK_THRESHOLD */
+#define SOLCLIENT_FLOW_PROP_ACK_THRESHOLD      "FLOW_ACK_THRESHOLD"        /**< The threshold for sending an acknowledgement, configured as a percentage. 
+ * The API sends a transport acknowledgment every N messages where N is calculated as this percentage of the flow window size if the endpoint's max-delivered-unacked-msgs-per-flow setting at bind time is greater than or equal to the transport window size. 
+ * Otherwise, N is calculated as this percentage of the endpoint's max-delivered-unacked-msgs-per-flow setting at bind time. 
+ *
+ * The valid range is 1..75. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_ACK_THRESHOLD 
+ */
 #define SOLCLIENT_FLOW_PROP_START_STATE        "FLOW_START_STATE"          /**< This property controls whether the Flow should be created in a start or stop state with respect to receiving messages. Flow start/stop state can be changed later through solClient_flow_start() or solClient_flow_stop(). Default ::SOLCLIENT_FLOW_PROP_DEFAULT_START_STATE */ 
-#define SOLCLIENT_FLOW_PROP_SELECTOR           "FLOW_SELECTOR"             /**< A Java Message System (JMS) defined selector. It can be a maximum 1023 bytes in length.  */
+#define SOLCLIENT_FLOW_PROP_SELECTOR           "FLOW_SELECTOR"             /**< A Java Message System (JMS) defined selector. */
 #define SOLCLIENT_FLOW_PROP_NO_LOCAL           "FLOW_NO_LOCAL"             /**< When a Flow has the No Local property enabled, messages published on the Session cannot appear in a Flow created in the same Session, even if the endpoint contains a subscription that matches the published message. The appliance that the Session connects to must have the No Local capability, and the capability must be enabled. If the appliance the Session is connected to does not support No Local, a call to solClient_session_createFlow() returns SOLCLIENT_FAIL and subcode ::SOLCLIENT_SUBCODE_NO_LOCAL_NOT_SUPPORTED set. */
 #define SOLCLIENT_FLOW_PROP_FORWARDING_MODE    "FLOW_FORWARDING_MODE"      /**< Set the @ref forwardingModes "forwarding mode" for messages received on the Flow. If the @ref forwardingModes "forwarding mode" chosen is not supported by the appliance ::solClient_session_createFlow() will fail. Default: ::SOLCLIENT_FLOW_PROP_FORWARDING_MODE_STORE_AND_FORWARD. */
 #define SOLCLIENT_FLOW_PROP_MAX_UNACKED_MESSAGES "FLOW_MAX_UNACKED_MESSAGES" /**< This property may only be set when the Flow property ::SOLCLIENT_FLOW_PROP_ACKMODE is set to ::SOLCLIENT_FLOW_PROP_ACKMODE_CLIENT and when the ::SOLCLIENT_FLOW_PROP_FORWARDING_MODE is set to ::SOLCLIENT_FLOW_PROP_FORWARDING_MODE_STORE_AND_FORWARD.. When set to a positive value, this property controls the maximum number of messages that may be unacknowledged on the Flow (solClient_flow_sendAck() is called to acknowledge messages and remove those messages from the message spool). This property cannot be used to increase the appliance configured maximum number of acknowledged messages on the endpoint.  When set to -1, the appliance configured maximum controls how many unacknowledged messages may be received by the application. Valid values are -1 and >0.  Default ::SOLCLIENT_FLOW_PROP_DEFAULT_MAX_UNACKED_MESSAGES */
@@ -2191,6 +2364,10 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
                                                           *  receive and acknowledge messages before they are delivered to the browser.
                                                           */
 #define SOLCLIENT_FLOW_PROP_ACTIVE_FLOW_IND    "FLOW_ACTIVE_FLOW_IND"      /**< When a Flow has the Active Flow Indication property enabled, the application will receive flow events when the flow becomes active, or inactive.  If the underlying session capabilities indicate that the appliance does not support active flow indications, then solClient_session_createFlow() will fail immediately (SOLCLIENT_FAIL) and set the subCode SOLCLIENT_SUBCODE_FLOW_ACTIVE_FLOW_INDICATION_UNSUPPORTED.  Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_ACTIVE_FLOW_IND */
+#define SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION "FLOW_REPLAY_START_LOCATION" /**< When a Flow is created, the application may request replay of messages from the replay log, even messages that have been previously delivered and removed the from topic endpoint or queue.  The replay start location may be ::SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION_BEGINNING to indicate that all messages available should be replayed.  Or the replay start location may be a string that begins with "DATE:" followed by a date in one of two formats. The date may be a string representing a long integer, which is the number of seconds since the epoch - 0:00:00 Jan 1, 1970.  The date may be a string as specified in RFC3339 - 'YYYY-MM-DDTHH:MM:SS[.1*DIGIT]Z' or 'YYYY-MM-DDTHH:MM:SS[.1*DIGIT]("+"/"-")HH:MM'. */
+#define SOLCLIENT_FLOW_PROP_MAX_RECONNECT_TRIES "FLOW_MAX_RECONNECT_TRIES" /**< When a flow is unbound by the message-broker due to "Replay Started" or "Service Unavailable", the API will attempt to reconnect the flow if this property is non-zero.  If this property is -1, it will retry forever. Otherwise it tries the configured maximum number of times. Default: ::SOLCLIENT_FLOW_PROP_DEFAULT_MAX_RECONNECT_TRIES */
+#define SOLCLIENT_FLOW_PROP_RECONNECT_RETRY_INTERVAL_MS "FLOW_RECONNECT_RETRY_INTERVAL_MS" /**< When a flow is reconnecting, the API will attempt to reconnect immediately, if that bind attempt fails it will wait for the retry interval before attempting to connect again. Default:  ::SOLCLIENT_FLOW_PROP_DEFAULT_RECONNECT_RETRY_INTERVAL_MS */
+
 /** @name Default Flow Configuration Properties
  *  The default values for Flow configuration.
  */
@@ -2213,6 +2390,10 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_FLOW_PROP_DEFAULT_MAX_UNACKED_MESSAGES "-1"   /**< The default value for ::SOLCLIENT_FLOW_PROP_MAX_UNACKED_MESSAGES */
 #define SOLCLIENT_FLOW_PROP_DEFAULT_BROWSER             SOLCLIENT_PROP_DISABLE_VAL /**< The default value for the ::SOLCLIENT_FLOW_PROP_BROWSER property. */
 #define SOLCLIENT_FLOW_PROP_DEFAULT_ACTIVE_FLOW_IND     SOLCLIENT_PROP_DISABLE_VAL /**< The default value for the ::SOLCLIENT_FLOW_PROP_ACTIVE_FLOW_IND property. */
+#define SOLCLIENT_FLOW_PROP_DEFAULT_REPLAY_START_LOCATION ""    /**< The default value for ::SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION is no replay requested. */
+#define SOLCLIENT_FLOW_PROP_DEFAULT_MAX_RECONNECT_TRIES "-1"    /**< The default value for ::SOLCLIENT_FLOW_PROP_MAX_RECONNECT_TRIES. */
+#define SOLCLIENT_FLOW_PROP_DEFAULT_RECONNECT_RETRY_INTERVAL_MS "3000" /**< The default reconnect retry interval timer */
+
 /*@}*/
 
 /** @name Flow Bind Entities
@@ -2225,7 +2406,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 /*@}*/
 
 /** @name Flow Acknowledgment Modes
- */
+*/
 /*@(*/
 #define SOLCLIENT_FLOW_PROP_ACKMODE_AUTO               "1"      /**< Automatic application acknowledgment of all received messages. If application calls ::solClient_flow_sendAck() in the ::SOLCLIENT_FLOW_PROP_ACKMODE_AUTO mode, a warning is generated. */
 #define SOLCLIENT_FLOW_PROP_ACKMODE_CLIENT             "2"      /**< Client must call solClient_flow_sendAck() to acknowledge the msgId specified. */
@@ -2278,7 +2459,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
  * Items that can be configured for a create endpoint operation.
  */
 #define SOLCLIENT_ENDPOINT_PROP_ID              "ENDPOINT_ID"             /**< The type of endpoint, the valid values are ::SOLCLIENT_ENDPOINT_PROP_QUEUE, ::SOLCLIENT_ENDPOINT_PROP_TE, and ::SOLCLIENT_ENDPOINT_PROP_CLIENT_NAME. Default: ::SOLCLIENT_ENDPOINT_PROP_TE */
-#define SOLCLIENT_ENDPOINT_PROP_NAME            "ENDPOINT_NAME"           /**< The name of the Queue or Topic endpoint. */
+#define SOLCLIENT_ENDPOINT_PROP_NAME            "ENDPOINT_NAME"           /**< The name of the Queue or Topic endpoint as a NULL-terminated UTF-8 encoded string. */
 #define SOLCLIENT_ENDPOINT_PROP_DURABLE         "ENDPOINT_DURABLE"        /**< The durability of the endpoint to name. Default: ::SOLCLIENT_PROP_ENABLE_VAL, which means the endpoint is durable. Only ::SOLCLIENT_PROP_ENABLE_VAL is supported in solClient_session_endpointProvision(). This property is ignored in solClient_session_creatFlow(). */
 #define SOLCLIENT_ENDPOINT_PROP_PERMISSION      "ENDPOINT_PERMISSION"     /**< The created entity's permissions, a single character string. Permissions can be ::SOLCLIENT_ENDPOINT_PERM_DELETE, ::SOLCLIENT_ENDPOINT_PERM_MODIFY_TOPIC, ::SOLCLIENT_ENDPOINT_PERM_CONSUME, ::SOLCLIENT_ENDPOINT_PERM_READ_ONLY, ::SOLCLIENT_ENDPOINT_PERM_NONE. */
 #define SOLCLIENT_ENDPOINT_PROP_ACCESSTYPE      "ENDPOINT_ACCESSTYPE"     /**< Sets the access type for the endpoint. This applies to durable Queues only. */
@@ -2307,12 +2488,15 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_ENDPOINT_PROP_QUEUE           "2"     /**< Request is for a Queue. */
 #define SOLCLIENT_ENDPOINT_PROP_TE              "3"     /**< Request is for a Topic Endpoint. */
 #define SOLCLIENT_ENDPOINT_PROP_CLIENT_NAME     "4"     /**< Request is for a Client name  (solClient_session_endpointTopicSubscribe() / solClient_session_endpointTopicUnsubscribe() only.) */
+/*@}*/
 
 /** @name Endpoint Naming Entities, used as values for ENDPOINT properties in solClient_session_endpointProvision().
 */
 /*@{*/
 #define SOLCLIENT_ENDPOINT_PROP_ACCESSTYPE_NONEXCLUSIVE        "0"     /**< A non-exclusive (shared) Queue. Each client to bind receives messages in a round robin fashion. */
 #define SOLCLIENT_ENDPOINT_PROP_ACCESSTYPE_EXCLUSIVE           "1"     /**< An exclusive Queue. The first client to bind receives the stored messages on the Endpoint. */
+/*@}*/
+
 
 /** @name Endpoint Permissions 
  */
@@ -2322,11 +2506,13 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_ENDPOINT_PERM_CONSUME        "c"     /**< Consumer permission — other clients may read and consume messages. */
 #define SOLCLIENT_ENDPOINT_PERM_MODIFY_TOPIC   "m"     /**< Modify Topic permission — other clients may read and consume messages, and modify Topic on a Topic Endpoint. */
 #define SOLCLIENT_ENDPOINT_PERM_DELETE         "d"     /**< Delete permission — other clients may read and consume messages, modify the Topic on a Topic Endpoint, and delete the endpoint.  */
+/*@}*/
 
 /** @name Endpoint Discard Msg Behavior */
 /*@(*/
 #define SOLCLIENT_ENDPOINT_PROP_DISCARD_NOTIFY_SENDER_ON      "1"       /**< Send the publisher a message reject notification ::SOLCLIENT_SESSION_EVENT_REJECTED_MSG_ERROR. */
 #define SOLCLIENT_ENDPOINT_PROP_DISCARD_NOTIFY_SENDER_OFF     "2"       /**< Discard the message and acknowledge it. */
+/*@}*/
 
 
 /*@(*/
@@ -2336,7 +2522,13 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
  */
 
 #define SOLCLIENT_PROVISION_FLAGS_WAITFORCONFIRM        (0x01)  /**< The provision operation blocks until it has completed successfully on the appliance or failed. */
-#define SOLCLIENT_PROVISION_FLAGS_IGNORE_EXIST_ERRORS   (0x02)  /**< When set, it is not considered an error if the endpoint already exists (create) or does not exist (delete). */                        
+#define SOLCLIENT_PROVISION_FLAGS_IGNORE_EXIST_ERRORS   (0x02)  /**< When set, it is not considered an error if the endpoint already exists (create) or does not exist (delete). */
+/*@}*/
+
+/** @name Replay Start Location */
+/*@(*/
+#define SOLCLIENT_FLOW_PROP_REPLAY_START_LOCATION_BEGINNING      "BEGINNING"   /**< Replay all messages in the replay log */
+/*@}*/
 
 /**
 * @anchor sessioncapabilities
@@ -2370,10 +2562,13 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_SESSION_CAPABILITY_CUT_THROUGH                    "SESSION_CAPABILITY_CUT_THROUGH"      /**< Boolean - The peer supports the cut-through forwarding mode for Guaranteed message delivery. */
 #define SOLCLIENT_SESSION_CAPABILITY_ACTIVE_FLOW_INDICATION         "SESSION_CAPABILITY_ACTIVE_FLOW_INDICATION"   /**< Boolean - TRUE if session supports active flow indication parameter */
 #define SOLCLIENT_SESSION_CAPABILITY_TRANSACTED_SESSION             "SESSION_CAPABILITY_TRANSACTED_SESSION" /**< Boolean - The Session allows Guaranteed Data Transacted Sessions. */
-#define SOLCLIENT_SESSION_CAPABILITY_OPENMAMA                       "SESSION_CAPABILITY_OPENMAMA" /**< Boolean - The Session allows the OpenMAMA API to be used. */
-
-#define SOLCLIENT_ERRORINFO_STR_SIZE (256) /**< The maximum size of error string including terminating NULL character. */
-
+#define SOLCLIENT_SESSION_CAPABILITY_OPENMAMA                       "SESSION_CAPABILITY_OPENMAMA"           /**< Boolean - The Session allows the OpenMAMA API to be used. */
+#define SOLCLIENT_SESSION_CAPABILITY_MESSAGE_REPLAY                 "SESSION_CAPABILITY_MESSAGE_REPLAY"     /**< Boolean - The Session allow Message Replay on flow create */
+#define SOLCLIENT_SESSION_CAPABILITY_COMPRESSED_SSL                 "SESSION_CAPABILITY_COMPRESSED_SSL" /**< Boolean - The peer can support ssl downgrade to compression. */
+#define SOLCLIENT_SESSION_CAPABILITY_LONG_SELECTORS                 "SESSION_CAPABILITY_LONG_SELECTORS" /**< Boolean - The peer can support selectors longer than 1023 bytes */
+#define SOLCLIENT_SESSION_CAPABILITY_SHARED_SUBSCRIPTIONS           "SESSION_CAPABILITY_SHARED_SUBSCRIPTIONS" /**< Boolean - The peer can support \#shared and \#noexport subscriptions */
+#define SOLCLIENT_SESSION_CAPABILITY_BR_REPLAY_ERRORID              "SESSION_CAPABILITY_BR_REPLAY_ERRORID" /**< Boolean - The peer can support the endpoint error id parameter on the flow bind response during message replay */
+/*@}*/
 
 /** @name TransactedSessionProps
  */
@@ -2381,6 +2576,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_TRANSACTEDSESSION_PROP_HAS_PUBLISHER "TRANSACTEDSESSION_HAS_PUBLISHER" /**<If it is enabled, a publisher flow is created when a Transacted Session is created successfully. Default: ::SOLCLIENT_TRANSACTEDSESSION_PROP_DEFAULT_HAS_PUBLISHER. */
 #define SOLCLIENT_TRANSACTEDSESSION_PROP_CREATE_MESSAGE_DISPATCHER "TRANSACTEDSESSION_CREATE_MESSAGE_DISPATCHER" /**<If it is enabled, a TransactedSession-bound Message Dispatcher is lazily created for asynchronous message delivery within a Transacted Session. Default: ::SOLCLIENT_TRANSACTEDSESSION_PROP_DEFAULT_CREATE_MESSAGE_DISPATCHER */  
 #define SOLCLIENT_TRANSACTEDSESSION_PROP_REQUESTREPLY_TIMEOUT_MS "TRANSACTEDSESSION_REQUESTREPLY_TIMEOUT_MS" /**< Timeout (in milliseconds) to wait for a response. The minimum configuration value is 1000. Default: ::SOLCLIENT_TRANSACTEDSESSION_PROP_DEFAULT_REQUESTREPLY_TIMEOUT_MS. */
+
 /*@}*/
 
 /** @name DefaultTransactedSessionProps
@@ -2391,19 +2587,20 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_TRANSACTEDSESSION_PROP_DEFAULT_REQUESTREPLY_TIMEOUT_MS  "10000" /**<The default Transacted Session request timer in milliseconds. */
 /*@}*/
 
-#define SOLCLIENT_TRANSACTEDSESSION_MAX_SESSION_NAME_LENGTH 64 /**< The maximum transacted session name length. */
-
 /**
 * @struct solClient_errorInfo
 *
 * The structure used to record more detailed error information for a failed API call.
 * @see ::solClient_subCode for a description of all subcodes.
 */
+
+#define SOLCLIENT_ERRORINFO_STR_SIZE (256) /**< The maximum size of error string including terminating NULL character. */
+
   typedef struct solClient_errorInfo
   {
     solClient_subCode_t subCode;                                              /**< A subcode indicating the type of error. */
     solClient_session_responseCode_t responseCode;                            /**< A response code that is returned for some subcodes; otherwise zero. */
-    char errorStr[SOLCLIENT_ERRORINFO_STR_SIZE];                              /**< An information string for certain types of subcodes (empty string, if not used). */
+    char errorStr[SOLCLIENT_ERRORINFO_STR_SIZE];                              /**< An information string (max length ::SOLCLIENT_ERRORINFO_STR_SIZE) for certain types of subcodes (empty string, if not used). */
   } solClient_errorInfo_t, *solClient_errorInfo_pt; /**< A pointer to a ::solClient_errorInfo structure returned from ::solClient_getLastErrorInfo() .*/
 
 /**
@@ -2419,7 +2616,6 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
   typedef solClient_bufInfo_t *solClient_bufInfo_pt; /**< A pointer to ::solClient_bufInfo structure used to point to a message part and to indicate the size of that part (in bytes). */
 
 
-  #define SOLCLIENT_SESSION_SEND_MULTIPLE_LIMIT 50
 
 
 /** @name Limits on sizes of message portions
@@ -2430,7 +2626,7 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
 #define SOLCLIENT_BUFINFO_MAX_TOPIC_SIZE     (250)         /**< The maximum size allowed for the topic portion (not including the terminating NULL). */
 #define SOLCLIENT_BUFINFO_MAX_QUEUENAME_SIZE (250)         /**< The maximum size allowed for the Queue name portion (not including the terminating NULL). */
 #define SOLCLIENT_BUFINFO_MAX_DURABLE_QUEUENAME_SIZE (200) /**< The maximum size allowed for a durable Queue name (not including the terminating NULL). */
-#define SOLCLIENT_MAX_SELECTOR_SIZE          (1023)        /**< The maximum length of a selector on solClient_session_createFlow(). */
+#define SOLCLIENT_SESSION_SEND_MULTIPLE_LIMIT 50           /**> The maximum number of messages which can be sent through a single call to solClient_session_sendMultipleMsg()*/
 /*@}*/
 
   typedef solClient_uint64_t solClient_stats_t,  /**< Type of a statistics value. */
@@ -2480,7 +2676,9 @@ Note: This property is used for all entries specified by the property ::SOLCLIEN
     SOLCLIENT_STATS_RX_DISCARD_MSG_FLOW_UNBOUND_PENDING = 32, /**< On a transacted flow, the number of messages discarded because the flow is in a UNBOUND pending state. */
     SOLCLIENT_STATS_RX_DISCARD_MSG_TRANSACTION_ROLLBACK = 33, /**< On a transacted flow, the number of messages discarded after a transaction rollback and becomes a message comes in with prevMsgId=0. */
     SOLCLIENT_STATS_RX_DISCARD_TRANSACTION_RESPONSE     = 34, /**< On a transacted session, the number of transaction responses discarded due to reconnection. */
-    SOLCLIENT_STATS_RX_NUM_STATS                       = 35  /**< The size of receive stats array. */
+    SOLCLIENT_STATS_RX_SSL_READ_EVENTS                  = 35,
+    SOLCLIENT_STATS_RX_SSL_READ_CALLS                   = 36,
+    SOLCLIENT_STATS_RX_NUM_STATS                       = 37  /**< The size of receive stats array. */
   } solClient_stats_rx_t; /**< Type that indicates which receive statistic. */
 
 /**
@@ -3841,7 +4039,6 @@ solClient_session_isCapable(
 * @param opaqueSession_p The opaque Session returned when Session was created.
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_FAIL
 * @subcodes
-* @li ::SOLCLIENT_SUBCODE_INVALID_SESSION_OPERATION - Set if called when the session is suspended (@see ::solClient_session_suspend)
 * @see ::solClient_subCode for a description of all subcodes.
 */
   solClient_dllExport solClient_returnCode_t
@@ -3905,7 +4102,7 @@ solClient_session_isCapable(
 *
 * The C-SDK will buffer up to a publishers window size (::SOLCLIENT_SESSION_PROP_PUB_WINDOW_SIZE) of guaranteed messages before 
 * solClient_session_sendMsg() will either block (when ::SOLCLIENT_SESSION_PROP_SEND_BLOCKING is enabled) or return ::SOLCLIENT_WOULD_BLOCK
-* (on active sessions) or return ::SOLCLIENT_NOT_READY (on disconnected sessions).
+* (on active sessions) or return ::SOLCLIENT_NOT_READY (on disconnected or reconnecting sessions).
 *
 * For the most part this is desired behavior. Transient sessions failures do not require special handling in applications. When 
 * ::SOLCLIENT_SESSION_PROP_RECONNECT_RETRIES is non-zero, the underlying transport will automatically reconnect and the publishing 
@@ -4042,7 +4239,7 @@ solClient_session_isCapable(
 * @see @ref topic-dispatch
 *
 * @param opaqueSession_p An opaque Session returned when the Session was created.
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_FAIL, ::SOLCLIENT_WOULD_BLOCK, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
 * @li ::SOLCLIENT_SUBCODE_INVALID_TOPIC_SYNTAX
@@ -4071,9 +4268,8 @@ solClient_session_isCapable(
 * @param flags \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
 *
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_FAIL, ::SOLCLIENT_WOULD_BLOCK, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
 * @li ::SOLCLIENT_SUBCODE_INVALID_TOPIC_SYNTAX
@@ -4119,10 +4315,9 @@ solClient_session_isCapable(
 * @param flags \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_LOCAL_DISPATCH_ONLY
 *
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @param funcInfo_p         The message receive callback information. See struct solClient_session_rxMsgDispatchFuncInfo
 * @param correlationTag     A correlationTag pointer that is returned as is in the confirm or fail sessionEvent for the
 *                           subscription. This is only used if SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM is set and
@@ -4169,7 +4364,7 @@ solClient_session_isCapable(
 * @see @ref topic-dispatch
 *
 * @param opaqueSession_p The opaque Session returned when Session was created.
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_FAIL, ::SOLCLIENT_WOULD_BLOCK, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
 * @li ::SOLCLIENT_SUBCODE_INVALID_TOPIC_SYNTAX
@@ -4194,9 +4389,8 @@ solClient_session_isCapable(
 * @param flags \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
 *
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_FAIL, ::SOLCLIENT_WOULD_BLOCK, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
 * @li ::SOLCLIENT_SUBCODE_INVALID_TOPIC_SYNTAX
@@ -4239,10 +4433,9 @@ solClient_session_isCapable(
 * @param flags \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_LOCAL_DISPATCH_ONLY
 *
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @param funcInfo_p         The message receive callback information. See struct solClient_session_rxMsgDispatchFuncInfo.
 * @param correlationTag     A correlationTag pointer that is returned as is in the confirm or fail sessionEvent for the
 *                           subscription. This is only used if SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM is set and
@@ -4293,7 +4486,7 @@ solClient_session_isCapable(
 * expected then, that the same Topic be used for sending many messages.
 *
 * @param opaqueSession_p The opaque Session returned when Session was created.
-* @param topicString_p The Topic string (must be NULL-terminated).
+* @param topicString_p The Topic string (a NULL-terminated UTF-8 string).
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_FAIL
 * @subcodes
 * @li ::SOLCLIENT_SUBCODE_INVALID_TOPIC_SYNTAX
@@ -4687,8 +4880,7 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 * @param flags           \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
-* @param topicSubscription_p Topic Subscription to apply as a NULL-terminated string.
+* @param topicSubscription_p Topic Subscription to apply as a NULL-terminated UTF-8 string.
 * @param correlationTag  Correlation tag returned in the resulting Session event.
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_FAIL, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
@@ -4716,8 +4908,7 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 * @param flags           \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
-* @param topicSubscription_p Topic Subscription to remove as a NULL-terminated string.
+* @param topicSubscription_p Topic Subscription to remove as a NULL-terminated UTF-8 string.
 * @param correlationTag  Correlation tag returned in the resulting Session event.
 * @return ::SOLCLIENT_OK, ::SOLCLIENT_FAIL, ::SOLCLIENT_NOT_READY, ::SOLCLIENT_IN_PROGRESS
 * @subcodes
@@ -4817,6 +5008,14 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 * @li ::SOLCLIENT_SUBCODE_TE_SHUTDOWN
 * @li ::SOLCLIENT_SUBCODE_NO_MORE_NON_DURABLE_QUEUE_OR_TE
 * @li ::SOLCLIENT_SUBCODE_SUBSCRIPTION_ACL_DENIED
+* @li ::SOLCLIENT_SUBCODE_REPLAY_NOT_SUPPORTED
+* @li ::SOLCLIENT_SUBCODE_REPLAY_DISABLED
+* @li ::SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_NON_EXCLUSIVE_NOT_ALLOWED
+* @li ::SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_INACTIVE_FLOW_NOT_ALLOWED
+* @li ::SOLCLIENT_SUBCODE_CLIENT_INITIATED_REPLAY_BROWSER_FLOW_NOT_ALLOWED 
+* @li ::SOLCLIENT_SUBCODE_REPLAY_TEMPORARY_NOT_SUPPORTED
+* @li ::SOLCLIENT_SUBCODE_UNKNOWN_START_LOCATION_TYPE
+* @li ::SOLCLIENT_SUBCODE_REPLAY_START_TIME_NOT_AVAILABLE
 * @see ::solClient_subCode for a description of all subcodes.
 */
   solClient_dllExport solClient_returnCode_t
@@ -4825,6 +5024,7 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
                                   solClient_opaqueFlow_pt * opaqueFlow_p,
                                   solClient_flow_createFuncInfo_t *
                                   funcInfo_p, size_t funcInfoSize);
+
 /**
 * Destroys a previously created Flow. Upon return, the opaque Flow pointer
 * is set to NULL.
@@ -5068,9 +5268,8 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 * @param flags \ref subscribeflags "Flags" to control the operation. Valid flags for this operation are:
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_WAITFORCONFIRM
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM
-* @li ::SOLCLIENT_SUBSCRIBE_FLAGS_RX_ALL_DELIVER_TO_ONE
 * @li ::SOLCLIENT_SUBSCRIBE_FLAGS_LOCAL_DISPATCH_ONLY
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @param funcInfo_p         The message receive callback information. See structure solClient_flow_rxMsgDispatchFuncInfo.
 * @param correlationTag     A correlationTag pointer that is returned in the confirm or fail sessionEvent for the
 *                           subscription. This is only used if SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM is set and
@@ -5105,7 +5304,7 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 *
 * @param opaqueFlow_p The opaque Flow returned when the Flow was created.
 * @param flags \ref subscribeflags "Flags" to control the operation. Not currently used. Set to zero to ensure future compatibility.
-* @param topicSubscription_p The Topic subscription string (must be NULL-terminated).
+* @param topicSubscription_p The Topic subscription string (a NULL-terminated UTF-8 string).
 * @param funcInfo_p         The message receive callback information. See structure solClient_flow_rxMsgDispatchFuncInfo.
 * @param correlationTag     A correlationTag pointer that is returned as is in the confirm or fail sessionEvent for the
 *                           subscription. This is only used if SOLCLIENT_SUBSCRIBE_FLAGS_REQUEST_CONFIRM is set and
@@ -5132,7 +5331,7 @@ solClient_session_sendReply (solClient_opaqueSession_pt opaqueSession_p,
 /**
  * Gets the value of the specified Flow property for the Flow. The 
  * property value is copied out to buffer provided by the caller. The returned
- * value is a NULL-terminated string.  
+ * value is a NULL-terminated UTF-8 string.  
  *
  * @param opaqueFlow_p    The opaque Flow returned when the Flow was created.
  * @param propertyName_p  The name of the Flow property for which the value is to be returned.
@@ -5174,8 +5373,9 @@ solClient_flow_logFlowInfo(solClient_opaqueFlow_pt opaqueFlow_p,
 /**
  * Creates a Transacted Session object that is used in subsequent transactions.
  * It is recommended that a client application use a default Context-bound Message Dispatcher
- * for its asynchronous message delivery within a Transacted Session.  
- * By enabling Transacted Session property ::SOLCLIENT_TRANSACTEDSESSION_PROP_CREATE_THREAD,
+ * for its asynchronous message delivery within a Transacted Session.
+ *
+ * By enabling Transacted Session property ::SOLCLIENT_TRANSACTEDSESSION_PROP_CREATE_MESSAGE_DISPATCHER,
  * a TransactedSession-bound Message Dispatcher is created as well when a Transacted Session
  * is created. The lifecycle of a Message Dispatcher is bounded to the lifecycle of the
  * corresponding API object.
@@ -5338,6 +5538,8 @@ solClient_transactedSession_createFlow (solClient_propertyArray_pt props,
  * @subcodes
  * @see ::solClient_subCode for a description of subcodes.
  */
+#define SOLCLIENT_TRANSACTEDSESSION_MAX_SESSION_NAME_LENGTH 64 /**< The maximum transacted session name length. */
+
 solClient_dllExport solClient_returnCode_t
 solClient_transactedSession_getSessionName(
     solClient_opaqueTransactedSession_pt  transactedSession_p,
@@ -5397,7 +5599,6 @@ solClient_flow_getTransactedSession(solClient_opaqueFlow_pt               flow_p
 /** @example Intro/HelloWorldWebPub.c */
 /** @example Intro/HelloWorldWebSub.c */
 /** @example ex/directPubSub.c */
-/** @example ex/dtoPubSub.c  */
 /** @example ex/queueProvision.c  */
 /** @example ex/perfTest.c      */
 /** @example ex/perfADSub.c     */
@@ -5438,9 +5639,7 @@ solClient_flow_getTransactedSession(solClient_opaqueFlow_pt               flow_p
 /** @example ex/ios/examples/AppTransitionsExample.m */
 /** @example ex/ios/examples/AsyncCacheRequestExample.m */
 /** @example ex/ios/examples/DirectPubSubExample.m */
-/** @example ex/ios/examples/DtoPubSubExample.m */
 /** @example ex/ios/examples/EventMonitorExample.m */
-/** @example ex/ios/examples/MessageReplayExample.m */
 /** @example ex/ios/examples/PerfTestExample.m */
 /** @example ex/ios/examples/RedirectLogsExample.m */
 /** @example ex/ios/examples/SdtPubSubMsgDepExample.m */
@@ -5458,9 +5657,7 @@ solClient_flow_getTransactedSession(solClient_opaqueFlow_pt               flow_p
 /** @example ex/ios/examples/AppTransitionsExample.h */
 /** @example ex/ios/examples/AsyncCacheRequestExample.h */
 /** @example ex/ios/examples/DirectPubSubExample.h */
-/** @example ex/ios/examples/DtoPubSubExample.h */
 /** @example ex/ios/examples/EventMonitorExample.h */
-/** @example ex/ios/examples/MessageReplayExample.h */
 /** @example ex/ios/examples/PerfTestExample.h */
 /** @example ex/ios/examples/RedirectLogsExample.h */
 /** @example ex/ios/examples/SdtPubSubMsgDepExample.h */

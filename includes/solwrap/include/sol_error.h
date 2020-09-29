@@ -1,6 +1,6 @@
 #ifndef SOL_ERROR_H
 #define SOL_ERROR_H
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /* Windows-only includes */
 #include <winsock2.h>
 #else

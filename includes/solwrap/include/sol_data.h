@@ -1,8 +1,9 @@
 #ifndef SOL_DATA_H
 #define SOL_DATA_H
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /* Windows-only includes */
 #include <winsock2.h>
+#include <stdint.h>
 #else
 /* Unix-only includes */
 #include <unistd.h>
@@ -12,15 +13,7 @@
 extern "C" {
 #endif
 
-    /**
-    * Handle to a Solace session instance.
-    **/
-    // typedef void*   SOLHANDLE;
-#if defined(_MSC_VER)
-		typedef HANDLE SOLHANDLE;
-#else
     typedef unsigned long long SOLHANDLE;
-#endif
     /**
      * Handle to a Solace guaranteed-messaging flow instance;
      **/

@@ -3,7 +3,8 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN apt-get update && \
 	apt-get install -y \
-	build-essential make nano git wget curl bison
+	build-essential make nano git wget curl bison \
+	gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
 
 WORKDIR /root
 RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer > ./gvm-installer.sh &&\
@@ -14,12 +15,14 @@ RUN curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscript
 
 WORKDIR /root/solace
 
+COPY *.c  /root/solace/
 COPY *.go  /root/solace/
 COPY *.mod /root/solace/
-COPY Makefile /root/solace/Makefile
+COPY makefile /root/solace/
+COPY makefile.* /root/solace/
 COPY build.sh /root/solace/build.sh
 COPY includes/ /root/solace/includes/
-COPY internal/ /root/solace/internal/
+COPY examples/ /root/solace/examples/
 
 RUN source /root/.gvm/scripts/gvm && gvm use go1.14.4 --default
 
