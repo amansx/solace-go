@@ -84,14 +84,31 @@ func gosol_on_pub(h SESSION, p *C.struct_publisher_event) {
 
 //export gosol_on_con
 func gosol_on_con(h SESSION, c *C.struct_connectivity_event) {
-	ctx := cptr.Restore(c.user_data).(*Solace)
+	con := cptr.Restore(c.user_data); 
+	ctx, ok := con.(*Solace)
+	if !ok {
+		if n := ctx.GetErrorChannel(); n != nil {
+			evt              := ErrorEvent{}
+			evt.Session      = uint64(h)
+			evt.FunctionName = "gosol_on_con"
+			evt.ReturnCode   = 1
+			evt.RCStr        = ""
+			evt.SubCode      = ""
+			evt.SCStr        = ""
+			evt.ResponseCode = 1
+			evt.ErrorStr     = "Connection Failure"
+			n <- evt
+		}
+		return
+	}
+
 	if n := ctx.GetConnectionChannel(); ctx != nil && n != nil {
 		evt := ConnectionEvent{
 			Session: uint64(h),
 			Type   : connectionTypeToString(int(c._type)),
 		}
 		n <- evt
-	}
+	}		
 }
 
 func i2b(i C.int) bool {
