@@ -6,5 +6,5 @@ echo "=============================="
 go version
 echo "=============================="
 
-make linux
+# make linux
 make windows
