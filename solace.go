@@ -87,18 +87,6 @@ func gosol_on_con(h SESSION, c *C.struct_connectivity_event) {
 	con := cptr.Restore(c.user_data); 
 	ctx, ok := con.(*Solace)
 	if !ok {
-		if n := ctx.GetErrorChannel(); n != nil {
-			evt              := ErrorEvent{}
-			evt.Session      = uint64(h)
-			evt.FunctionName = "gosol_on_con"
-			evt.RCStr        = ""
-			evt.SCStr        = ""
-			evt.ErrorStr     = "Connection Failure"
-			evt.SubCode      = 1
-			evt.ResponseCode = 1
-			evt.ReturnCode   = 1
-			n <- evt
-		}
 		return
 	}
 
