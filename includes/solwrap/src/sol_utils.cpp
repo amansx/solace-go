@@ -28,6 +28,7 @@ sol_init(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb
     }
 
     cout << "Aman"
+    printf("aaaaa")
 
     /* 
      * Standard logging levels can be set independently for the API and the
