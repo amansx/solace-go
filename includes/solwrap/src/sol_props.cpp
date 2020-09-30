@@ -127,6 +127,7 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     props["SESSION_CONNECT_RETRIES"] = "-1";
     props["SESSION_RECONNECT_RETRIES"] = "-1";
     props["SESSION_RECONNECT_RETRY_WAIT_MS"] = "10000";
+    props["SESSION_REAPPLY_SUBSCRIPTIONS"] = "1";
 
 
     const char** sp = new const char*[ props.size()*2 +1 ];
