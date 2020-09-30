@@ -17,6 +17,10 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
 {
     sol_state* state = (sol_state*) user_p;
 
+    solClient_log(SOLCLIENT_LOG_CRITICAL,
+            "sol_session_event_triage(): %s\n",
+                          solClient_session_eventToString(eventInfo_p->sessionEvent));
+
     switch(eventInfo_p->sessionEvent) {
         // connectivity events
         case SOLCLIENT_SESSION_EVENT_UP_NOTICE:
