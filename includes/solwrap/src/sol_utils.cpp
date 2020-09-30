@@ -32,12 +32,10 @@ sol_init(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb
      * application. In this case, the ALL category is used to set the log level for 
      * both at the same time.
      */
-    solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_ERROR);
+    solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_DEBUG);
     // solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_CRITICAL);
 
     // Create a Context allowing solclient lib to create the context thread
-    solClient_log(SOLCLIENT_LOG_ERROR, "Creating solClient context");
-    
     solClient_context_createFuncInfo_t ctx_fn_info = SOLCLIENT_CONTEXT_CREATEFUNC_INITIALIZER;
     
     if( (rc = solClient_context_create(SOLCLIENT_CONTEXT_PROPS_DEFAULT_WITH_CREATE_THREAD, &(state->ctx_), &ctx_fn_info, sizeof(solClient_context_createFuncInfo_t))) != SOLCLIENT_OK ) {
