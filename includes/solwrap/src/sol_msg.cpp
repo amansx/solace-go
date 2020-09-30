@@ -127,7 +127,8 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
         } else if (field.type == SOLCLIENT_STRING) {
             json["string"][name_p] = field.value.string;
         } else {
-            on_error( (SOLHANDLE)state, rc, "unknown type" );
+            solClient_log(SOLCLIENT_LOG_CRITICAL, "Unknown Type(): %s\n", field.type);
+            // on_error( (SOLHANDLE)state, rc, "unknown type" );
         }
 
     }
