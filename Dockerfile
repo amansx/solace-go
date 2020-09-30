@@ -18,7 +18,7 @@ WORKDIR /root/solace
 
 COPY *.c  /root/solace/
 COPY *.go  /root/solace/
-COPY *.mod /root/solace/
+COPY go.mod /root/solace/
 COPY makefile /root/solace/
 COPY makefile.* /root/solace/
 COPY build.sh /root/solace/build.sh

@@ -1,5 +1,4 @@
 #include "sol_props.h"
-#include "solclient/solClient.h"
 #include <map>
 #include <string>
 #include <iostream>
@@ -129,11 +128,11 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     // props["SESSION_REAPPLY_SUBSCRIPTIONS"] = "1";
     // props["SESSION_CONNECT_RETRIES_PER_HOST"]           = "-1";
 
-    props[SOLCLIENT_SESSION_PROP_CONNECT_RETRIES_PER_HOST] = "-1";
-    props[SOLCLIENT_SESSION_PROP_CONNECT_RETRIES]          = "-1";
-    props[SOLCLIENT_SESSION_PROP_RECONNECT_RETRIES]        = "-1";    
-    props[SOLCLIENT_SESSION_PROP_RECONNECT_RETRY_WAIT_MS]  = "10000";
-    props[SOLCLIENT_SESSION_PROP_REAPPLY_SUBSCRIPTIONS]    = SOLCLIENT_PROP_ENABLE_VAL;
+    props["SESSION_CONNECT_RETRIES_PER_HOST"] = "-1";
+    props["SESSION_CONNECT_RETRIES"]          = "-1";
+    props["SESSION_RECONNECT_RETRIES"]        = "-1";    
+    props["SESSION_RECONNECT_RETRY_WAIT_MS"]  = "10000";
+    props["SESSION_REAPPLY_SUBSCRIPTIONS"]    = "1";
 
 
     const char** sp = new const char*[ props.size()*2 +1 ];

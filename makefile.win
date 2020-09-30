@@ -49,7 +49,7 @@ $(SONAME): $(SOL_SRC)
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && $(AR) -rcs libsolwrap.lib *.o && rm *.o
 
 lib-tests:
-	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.win     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+#	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.win     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 #	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/persistent.test       $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 #	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/subscribe.test        $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 # 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test         $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
