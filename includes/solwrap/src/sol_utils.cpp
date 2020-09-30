@@ -23,7 +23,7 @@ sol_init(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb
     state->conn_cb_   = con_cb;
     state->user_data_ = user_data;
 
-    if( (rc = solClient_initialize(SOLCLIENT_LOG_DEBUG, NULL)) != SOLCLIENT_OK ) {
+    if( (rc = solClient_initialize(SOLCLIENT_LOG_CRITICAL, NULL)) != SOLCLIENT_OK ) {
         on_error((SOLHANDLE)state, rc, "solClient_initialize()" );
     }
 
