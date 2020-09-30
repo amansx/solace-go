@@ -27,6 +27,8 @@ sol_init(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb
         on_error((SOLHANDLE)state, rc, "solClient_initialize()" );
     }
 
+    cout << "Aman"
+
     /* 
      * Standard logging levels can be set independently for the API and the
      * application. In this case, the ALL category is used to set the log level for 
