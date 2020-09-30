@@ -23,23 +23,20 @@ sol_init(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivity_cb
     state->conn_cb_   = con_cb;
     state->user_data_ = user_data;
 
-    if( (rc = solClient_initialize(SOLCLIENT_LOG_DEFAULT_FILTER, NULL)) != SOLCLIENT_OK ) {
+    if( (rc = solClient_initialize(SOLCLIENT_LOG_DEBUG, NULL)) != SOLCLIENT_OK ) {
         on_error((SOLHANDLE)state, rc, "solClient_initialize()" );
     }
-
-    cout << "Aman"
-    printf("aaaaa")
 
     /* 
      * Standard logging levels can be set independently for the API and the
      * application. In this case, the ALL category is used to set the log level for 
      * both at the same time.
      */
-    solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_INFO);
+    solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_ERROR);
     // solClient_log_setFilterLevel(SOLCLIENT_LOG_CATEGORY_ALL, SOLCLIENT_LOG_CRITICAL);
 
     // Create a Context allowing solclient lib to create the context thread
-    solClient_log(SOLCLIENT_LOG_INFO, "Creating solClient context");
+    solClient_log(SOLCLIENT_LOG_ERROR, "Creating solClient context");
     
     solClient_context_createFuncInfo_t ctx_fn_info = SOLCLIENT_CONTEXT_CREATEFUNC_INITIALIZER;
     

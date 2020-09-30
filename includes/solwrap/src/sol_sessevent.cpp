@@ -2,6 +2,7 @@
 #include "sol_state.h"
 #include "sol_error.h"
 #include "solclient/solClient.h"
+#include <stdio.h>
 
 #ifdef PYTHON_SUPPORT
 #include <Python.h>
@@ -17,9 +18,8 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
 {
     sol_state* state = (sol_state*) user_p;
 
-    solClient_log(SOLCLIENT_LOG_CRITICAL,
-            "sol_session_event_triage(): %s\n",
-                          solClient_session_eventToString(eventInfo_p->sessionEvent));
+    solClient_log(SOLCLIENT_LOG_ERROR, "Creating solClient context");
+    printf("Hello world \n");
 
     switch(eventInfo_p->sessionEvent) {
         // connectivity events
