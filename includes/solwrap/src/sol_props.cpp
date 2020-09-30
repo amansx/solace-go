@@ -122,6 +122,13 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     props[SESSION_APP_DESC_K]        = trim(SESSION_APP_DESC_V);
     props[SESSION_CLIENT_NAME_K]     = trim(SESSION_CLIENT_NAME_V);
 
+    // Retry Forever
+    props["SOLCLIENT_SESSION_PROP_CONNECT_RETRIES"] = "-1";
+    props["SOLCLIENT_SESSION_PROP_RECONNECT_RETRIES"] = "-1";
+    props["SOLCLIENT_SESSION_PROP_RECONNECT_RETRY_WAIT_MS"] = "10000";
+    props["SOLCLIENT_SESSION_PROP_CONNECT_RETRIES_PER_HOST"] = "-1";
+
+
     const char** sp = new const char*[ props.size()*2 +1 ];
     std::for_each( props.begin(), props.end(), inserter(sp) );
     sp[ 2*props.size() ] = 0;
