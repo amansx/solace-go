@@ -126,9 +126,25 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
             json["int64"][name_p] = field.value.int64;
         } else if (field.type == SOLCLIENT_STRING) {
             json["string"][name_p] = field.value.string;
+        } else if (field.type == SOLCLIENT_INT8) {
+            json["int8"][name_p] = field.value.int8;
+        } else if (field.type == SOLCLIENT_UINT8) {
+            json["uint8"][name_p] = field.value.uint8;
+        } else if (field.type == SOLCLIENT_INT16) {
+            json["int16"][name_p] = field.value.int16;
+        } else if (field.type == SOLCLIENT_UINT16) {
+            json["uint16"][name_p] = field.value.uint16;
+        } else if (field.type == SOLCLIENT_INT32) {
+            json["int32"][name_p] = field.value.int32;
+        } else if (field.type == SOLCLIENT_UINT32) {
+            json["uint32"][name_p] = field.value.uint32;
+        } else if (field.type == SOLCLIENT_INT64) {
+            json["int64"][name_p] = field.value.int64;
+        } else if (field.type == SOLCLIENT_UINT64) {
+            json["uint64"][name_p] = field.value.uint64;
         } else {
-            solClient_log(SOLCLIENT_LOG_CRITICAL, "Unknown Type(): %s\n", field.type);
-            // on_error( (SOLHANDLE)state, rc, "unknown type" );
+            // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unknown Type In Message Callback");
+            on_error( (SOLHANDLE)state, rc, "Unknown type in message callback" );
         }
 
     }
