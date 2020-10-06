@@ -3,7 +3,7 @@ package solace
 //#cgo amd64 386 CFLAGS: -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES
 //#cgo CFLAGS: -I. -I${SRCDIR}/includes/solwrap/include -fPIC -m64 -g
 //#cgo linux CFLAGS: -D_REENTRANT -D_LINUX_X86_64
-//#cgo linux LDFLAGS: -L${SRCDIR}/lib.linux -lsolwrap -lsolclient -lpthread -lrt -lstdc++
+//#cgo linux LDFLAGS: -L${SRCDIR}/lib.linux -static -pthread -lsolwrap -lsolclient -lpthread -lrt -lstdc++
 //#cgo darwin CFLAGS: -D_REENTRANT
 //#cgo darwin LDFLAGS: -L${SRCDIR}/lib.osx -lsolwrap -lsolclient -lcrypto -lssl -lgssapi_krb5 -lpthread -lstdc++
 //#cgo windows CFLAGS: -DSOL_WRAP_API -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -DWIN32 -DNDEBUG -D_WINDOWS -D_USRDLL -D_CRT_SECURE_NO_WARNINGS -fPIC -m64 -g

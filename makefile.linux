@@ -7,30 +7,15 @@ SOLCLIENT_DIR  = $(CURDIR)/includes/solclient
 LIB_DIR        = $(CURDIR)/lib.linux
 BUILD_DIR      = $(CURDIR)/bin
 
+SOL_SRC        = $(wildcard $(SOLWRAP_DIR)/src/*.cpp)
+
 PYINC=
 PYLIB=
 PYDEF=
 
-INCDIRS              = $(SOLCLIENT_DIR)/include $(SOLWRAP_DIR)/include
-LIBDIRS              = $(CURDIR) $(SOLCLIENT_DIR)/lib.linux
-STATIC_LIBS          = $(CURDIR)/lib.linux/libsolwrap.a $(SOLCLIENT_DIR)/lib.linux/libsolclient.a
-WRAP_LIBS            = pthread
-WRAP_BIN_LIBS        = pthread rt
-WRAP_GO_LIBS         = pthread rt stdc++
-SYMS                 = PROVIDE_LOG_UTILITIES SOLCLIENT_CONST_PROPERTIES _REENTRANT _LINUX_X86_64
-DEBUG                = -g
-
-SOL_SRC     = $(wildcard $(SOLWRAP_DIR)/src/*.cpp)
-SOL_TEST    = $(wildcard ./bin/*.test)
-
-CXXFLAGS_LIB = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
-CXXFLAGS     = $(foreach d, $(INCDIRS), -I$d) $(foreach s, $(SYMS), -D$s) -m64 $(DEBUG)
-
-WRAPPER_LIBS      = $(foreach l, $(WRAP_LIBS), -l$l)
-WRAPPER_GO_LIBS   = $(foreach l, $(WRAP_GO_LIBS), -l$l)
-WRAPPER_BIN_LIBS  = $(foreach l, $(WRAP_BIN_LIBS), -l$l)
-
-RUN_TESTS = $(foreach b, $(SOL_TEST), printf "\n$(b)\n=====================\n" && ./$(b) &&) printf "==========\n"
+INCDIRS      = -I$(SOLCLIENT_DIR)/include -I$(SOLWRAP_DIR)/include
+COMMON_FLAGS = $(INCDIRS) -DPROVIDE_LOG_UTILITIES -DSOLCLIENT_CONST_PROPERTIES -D_REENTRANT -D_LINUX_X86_64 -m64 -g
+DIRECT_LIBS  = -static -pthread $(CURDIR)/lib.linux/libsolwrap.a $(SOLCLIENT_DIR)/lib.linux/libsolclient.a -lm -lrt -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 
 all: $(SONAME)
 
@@ -41,10 +26,11 @@ $(SONAME): $(SOL_SRC)
 	@echo "=============================="
 	@mkdir -p $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.linux/libsolclient.a* $(LIB_DIR)
-	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && ar -rcs libsolwrap.a *.o && rm *.o
+	cd $(LIB_DIR) && $(CXX) $(COMMON_FLAGS) -c $(SOL_SRC) -static -lrt -pthread -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -fPIC && ar -rcs libsolwrap.a *.o && rm *.o
 
 lib-tests:
-	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.linux     $(SOLWRAP_DIR)/tests/direct_test.cpp         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
+	$(CXX) $(COMMON_FLAGS) -o $(BUILD_DIR)/direct.test.linux $(SOLWRAP_DIR)/tests/direct_test.cpp $(DIRECT_LIBS)
+# 	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/direct.test.linux  $(SOLWRAP_DIR)/tests/direct_test.cpp $(LIBS)
 #	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/persistent.test       $(SOLWRAP_DIR)/tests/persistent_test.cpp     $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 #	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/subscribe.test        $(SOLWRAP_DIR)/tests/bulk_subscribe_test.cpp $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
 # 	$(CC)  $(CXXFLAGS) -o $(BUILD_DIR)/c_client.test         $(SOLWRAP_DIR)/tests/c_client_test.c         $(STATIC_LIBS) $(WRAPPER_BIN_LIBS)
@@ -54,5 +40,5 @@ test:
 	$(RUN_TESTS)
 
 examples:
-	@cd /root/solace/examples && go build -o ../bin/pub.example.linux example.publisher.go
-	@cd /root/solace/examples && go build -o ../bin/sub.example.linux example.subscriber.go
+	cd /root/solace/examples && go build -o ../bin/pub.example.linux example.publisher.go
+# 	@cd /root/solace/examples && go build -o ../bin/sub.example.linux example.subscriber.go
