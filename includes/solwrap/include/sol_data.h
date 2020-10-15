@@ -95,7 +95,7 @@ extern "C" {
 
         const char*    application_message_type;
         const char*    buffer;
-        int            buflen;
+        unsigned int   buflen;
         
         int            req_id;
         int            redelivered_flag;

@@ -67,11 +67,26 @@ sol_msg_replyto(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, mes
     return rc;
 }
 
+// void *vp = static_cast<void*>(new std::string("it's easy to break stuff like this!"));
+// int r = solClient_msg_getBinaryAttachmentPtr( msg_p, &(msg->buffer), &(msg->buflen) );
+// int r = solClient_msg_getBinaryAttachmentString( msg_p, &(msg->buffer) );
+
 int 
 sol_msg_payload(solClient_opaqueMsg_pt msg_p, message_event* msg) 
 {
-    // return solClient_msg_getBinaryAttachmentPtr( msg_p, &(msg->buffer), &(msg->buflen) );
-    return solClient_msg_getBinaryAttachmentString( msg_p, &(msg->buffer) );
+    void *vp;
+    unsigned int vpl;
+
+    int r = solClient_msg_getBinaryAttachmentPtr(msg_p, &(vp), &(vpl));
+
+    std::string *sp = static_cast<std::string*>(vp);
+    std::string s = *sp;
+    delete sp;
+
+    msg->buffer = s.c_str();
+    msg->buflen = vpl;
+
+    return r;
 }
 
 int 

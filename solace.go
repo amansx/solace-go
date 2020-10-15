@@ -43,8 +43,7 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		// }
 
 		payload := []byte(C.GoString(m.buffer))
-		evt.BinaryPayload    = payload
-		evt.BinaryPayloadLen = len(payload)
+		evt.BinaryPayload = payload
 
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)

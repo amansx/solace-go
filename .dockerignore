@@ -1,3 +1,5 @@
 includes/solace-standard/*
 .git/
 pkg/
+bin/
+lib.*/
