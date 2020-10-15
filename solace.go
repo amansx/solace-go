@@ -45,7 +45,7 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 			}
 		}()
 		data := C.GoBytes(m.buffer, C.int(m.buflen))
-		fmt.Printf("%T %v \n", data, data)
+		fmt.Printf("%T %v \n", data, data[:10])
 
 		// if m.buflen {
 		//  buf := m.buffer[0]
