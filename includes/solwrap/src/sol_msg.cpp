@@ -224,6 +224,9 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     // END Populate Fields
     // ======================================
 
+    recvmsg->buffer = 0;
+    recvmsg->buflen = 0;
+
     if ( (rc = (solClient_returnCode_t) solClient_msg_getBinaryAttachmentPtr(msg_p, &(recvmsg->buffer), &(recvmsg->buflen)) ) != SOLCLIENT_OK ) {
         // on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
