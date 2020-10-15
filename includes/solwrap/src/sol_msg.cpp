@@ -31,12 +31,12 @@ sol_msg_destination(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest,
     solClient_returnCode_t rc = solClient_msg_getDestination( msg_p, dest, sizeof(solClient_destination_t) );
     if ( rc == SOLCLIENT_OK ) {
         if (dest->destType == SOLCLIENT_TOPIC_DESTINATION) {
-        	msg->destination = dest->dest;
-        	msg->desttype = TOPIC;
+            msg->destination = dest->dest;
+            msg->desttype = TOPIC;
         }
         else if (dest->destType == SOLCLIENT_QUEUE_DESTINATION) {
-        	msg->destination = dest->dest;
-        	msg->desttype = QUEUE;
+            msg->destination = dest->dest;
+            msg->desttype = QUEUE;
         }
     }
     else {
@@ -113,43 +113,90 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
 
     nlohmann::json json;
     while (solClient_container_hasNextField(ptr)) {
+
         solClient_field_t field;
         const char *name_p = NULL;
 
         if ((rc = solClient_container_getNextField (ptr, &field, sizeof(solClient_field_t), &name_p)) != SOLCLIENT_OK) {
-            on_error( (SOLHANDLE)state, rc, "solClient_msg_getUserPropertyMap()" );
+            solClient_log(SOLCLIENT_LOG_CRITICAL, "Bad Field");
+            // on_error( (SOLHANDLE)state, rc, "solClient_msg_getUserPropertyMap()" );
+            continue;
         }
 
-        if (field.type == SOLCLIENT_BOOL) {
-            json["bool"][name_p] = field.value.boolean;
-        } else if (field.type == SOLCLIENT_INT64) {
-            json["int64"][name_p] = field.value.int64;
-        } else if (field.type == SOLCLIENT_STRING) {
-            json["string"][name_p] = field.value.string;
-        } else if (field.type == SOLCLIENT_INT8) {
-            json["int8"][name_p] = field.value.int8;
-        } else if (field.type == SOLCLIENT_UINT8) {
-            json["uint8"][name_p] = field.value.uint8;
-        } else if (field.type == SOLCLIENT_INT16) {
-            json["int16"][name_p] = field.value.int16;
-        } else if (field.type == SOLCLIENT_UINT16) {
-            json["uint16"][name_p] = field.value.uint16;
-        } else if (field.type == SOLCLIENT_INT32) {
-            json["int32"][name_p] = field.value.int32;
-        } else if (field.type == SOLCLIENT_UINT32) {
-            json["uint32"][name_p] = field.value.uint32;
-        } else if (field.type == SOLCLIENT_INT64) {
-            json["int64"][name_p] = field.value.int64;
-        } else if (field.type == SOLCLIENT_UINT64) {
-            json["uint64"][name_p] = field.value.uint64;
-        } else {
-            // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unknown Type In Message Callback");
-            on_error( (SOLHANDLE)state, rc, "Unknown type in message callback" );
+        switch (field.type) {
+            case SOLCLIENT_BOOL:
+                // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is bool", name_p);
+                json["bool"][name_p] = field.value.boolean;
+                break;
+            case SOLCLIENT_UINT8:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is uint8", name_p);
+                break;
+            case SOLCLIENT_INT8:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_INT8", name_p);
+                break;
+            case SOLCLIENT_UINT16:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_UINT16", name_p);
+                break;
+            case SOLCLIENT_INT16:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_INT16", name_p);
+                break;
+            case SOLCLIENT_UINT32:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_UINT32", name_p);
+                break;
+            case SOLCLIENT_INT32:
+                // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_INT32", name_p);
+                json["int32"][name_p] = field.value.int32;
+                break;
+            case SOLCLIENT_UINT64:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_UINT64", name_p);
+                break;
+            case SOLCLIENT_INT64:
+                // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_INT64", name_p);
+                json["int64"][name_p] = field.value.int64;
+                break;
+            case SOLCLIENT_WCHAR:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_WCHAR", name_p);
+                break;
+            case SOLCLIENT_STRING:
+                // solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_STRING", name_p);
+                json["string"][name_p] = field.value.string;
+                break;
+            case SOLCLIENT_BYTEARRAY:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_BYTEARRAY", name_p);
+                break;
+            case SOLCLIENT_FLOAT:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_FLOAT", name_p);
+                break;
+            case SOLCLIENT_DOUBLE:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_DOUBLE", name_p);
+                break;
+            case SOLCLIENT_MAP:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_MAP", name_p);
+                break;
+            case SOLCLIENT_STREAM:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_STREAM", name_p);
+                break;
+            case SOLCLIENT_NULL:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_NULL", name_p);
+                break;
+            case SOLCLIENT_DESTINATION:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_DESTINATION", name_p);
+                break;
+            case SOLCLIENT_SMF:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_SMF", name_p);
+                break;
+            case SOLCLIENT_UNKNOWN:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s is SOLCLIENT_UNKNOWN", name_p);
+                break;
+            default:
+                solClient_log(SOLCLIENT_LOG_CRITICAL, "Unmapped %s", name_p);
+               break;
         }
 
     }
 
     const std::string user_properties_payload = json.dump();
+    recvmsg->user_properties      = user_properties_payload.c_str();
 
     recvmsg->req_id               = sol_msg_req_id( msg_p );
     recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
@@ -161,15 +208,14 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
 
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
+        // on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
 
     if ( (rc = (solClient_returnCode_t) sol_msg_destination ( msg_p, &(state->recvdest_), recvmsg )) != SOLCLIENT_OK) {
-        on_error( (SOLHANDLE)state, rc, "sol_msg_destination()" );
+        // on_error( (SOLHANDLE)state, rc, "sol_msg_destination()" );
     }
 
-    recvmsg->user_properties      = user_properties_payload.c_str();
-    recvmsg->user_data            = state->user_data_;
+    recvmsg->user_data = state->user_data_;
 
     // ======================================
     // END Populate Fields
@@ -177,13 +223,7 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
 
 
     if (state->msg_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-        PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
         (state->msg_cb_)( (SOLHANDLE)state, recvmsg );
-#ifdef PYTHON_SUPPORT
-        PyGILState_Release(gstate);
-#endif
     }
 
     return SOLCLIENT_CALLBACK_OK;
