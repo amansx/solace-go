@@ -24,6 +24,12 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 	ctx := cptr.Restore(m.user_data).(*Solace)
 	if n := ctx.GetMessageChannel(); n != nil {
 
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Incoming Message Panic", r)
+			}
+		}()
+
 		evt                        := MessageEvent{}
 		evt.Session                 = uint64(h)
 		evt.DestinationType         = destinationTypeToString(int(m.desttype))
@@ -38,10 +44,10 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.UserProperties          = C.GoString(m.user_properties)
 		evt.CorrelationID           = C.GoString(m.correlationid)
 
-		cint := C.int(m.buflen)
-		fmt.Printf("%+v", cint)
+		fmt.Printf("%T%v %T%v %T%v %v \n", m.buflen, m.buflen, m.buffer, m.buffer, m.buflen > 0)
+		fmt.Printf("%T%v %T%v %T%v %v \n",  C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen)))
 
-		// if m.buffer[0] != 0 {
+		// if m.buflen {
 		//  buf := m.buffer[0]
 		// 	evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(), C.int(m.buflen))
 		// 	evt.BinaryPayloadLen = uint(m.buflen)

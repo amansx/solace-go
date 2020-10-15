@@ -81,11 +81,11 @@ sol_msg_replyto(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, mes
 // msg->buflen = vpl;
 // return r;
 
-int 
-sol_msg_payload(solClient_opaqueMsg_pt msg_p, message_event* msg) 
-{
-    return solClient_msg_getBinaryAttachmentPtr(msg_p, &(msg->buffer), &(msg->buflen));
-}
+// int 
+// sol_msg_payload(solClient_opaqueMsg_pt msg_p, message_event* msg) 
+// {
+//     return solClient_msg_getBinaryAttachmentPtr(msg_p, &(msg->buffer), &(msg->buflen));
+// }
 
 int 
 sol_msg_id(solClient_opaqueMsg_pt msg_p, message_event* msg)
@@ -224,7 +224,7 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     // END Populate Fields
     // ======================================
 
-    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
+    if ( (rc = (solClient_returnCode_t) solClient_msg_getBinaryAttachmentPtr(msg_p, &(recvmsg->buffer), &(recvmsg->buflen)) ) != SOLCLIENT_OK ) {
         // on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
 
@@ -297,7 +297,7 @@ on_flow_msg_cb(solClient_opaqueFlow_pt opaqueFlow_p, solClient_opaqueMsg_pt msg_
     
     sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
 
-    if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
+    if ( (rc = (solClient_returnCode_t) solClient_msg_getBinaryAttachmentPtr(msg_p, &(recvmsg->buffer), &(recvmsg->buflen)) ) != SOLCLIENT_OK ) {
         on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
     }
 
