@@ -37,21 +37,16 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.UserProperties          = C.GoString(m.user_properties)
 		evt.CorrelationID           = C.GoString(m.correlationid)
 
-		fmt.Printf("%T %v %T %v %v \n", m.buflen, m.buflen, m.buffer, m.buffer, m.buflen > 0)
-
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println("Incoming Message Panic", r)
 			}
 		}()
-		data := C.GoBytes(m.buffer, C.int(m.buflen))
-		fmt.Printf("%T %v \n", data, data[:10])
 
-		// if m.buflen {
-		//  buf := m.buffer[0]
-		// 	evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(), C.int(m.buflen))
-		// 	evt.BinaryPayloadLen = uint(m.buflen)
-		// }
+		if m.buffer != nil && m.buflen > 0 {
+			evt.BinaryPayload    = C.GoBytes(m.buffer, C.int(m.buflen))
+			evt.BinaryPayloadLen = uint(m.buflen)
+		}
 
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)
