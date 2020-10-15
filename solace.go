@@ -12,6 +12,7 @@ package solace
 //#include "sol_api.h"
 //#include "solace.c"
 import "C"
+import "fmt"
 import "unsafe"
 import "encoding/json"
 import cptr "github.com/mattn/go-pointer"
@@ -37,13 +38,14 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.UserProperties          = C.GoString(m.user_properties)
 		evt.CorrelationID           = C.GoString(m.correlationid)
 
-		// if m.buffer != nil {
-		// 	evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+		cint := C.int(m.buflen)
+		fmt.Printf("%+v", cint)
+
+		// if m.buffer[0] != 0 {
+		//  buf := m.buffer[0]
+		// 	evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(), C.int(m.buflen))
 		// 	evt.BinaryPayloadLen = uint(m.buflen)
 		// }
-
-		payload := []byte(C.GoString(m.buffer))
-		evt.BinaryPayload = payload
 
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)

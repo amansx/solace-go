@@ -70,23 +70,21 @@ sol_msg_replyto(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, mes
 // void *vp = static_cast<void*>(new std::string("it's easy to break stuff like this!"));
 // int r = solClient_msg_getBinaryAttachmentPtr( msg_p, &(msg->buffer), &(msg->buflen) );
 // int r = solClient_msg_getBinaryAttachmentString( msg_p, &(msg->buffer) );
+// void *vp;
+// unsigned int vpl;
+
+// std::string *sp = static_cast<std::string*>(vp);
+// std::string s = *sp;
+// delete sp;
+
+// msg->buffer = s.c_str();
+// msg->buflen = vpl;
+// return r;
 
 int 
 sol_msg_payload(solClient_opaqueMsg_pt msg_p, message_event* msg) 
 {
-    void *vp;
-    unsigned int vpl;
-
-    int r = solClient_msg_getBinaryAttachmentPtr(msg_p, &(vp), &(vpl));
-
-    std::string *sp = static_cast<std::string*>(vp);
-    std::string s = *sp;
-    delete sp;
-
-    msg->buffer = s.c_str();
-    msg->buflen = vpl;
-
-    return r;
+    return solClient_msg_getBinaryAttachmentPtr(msg_p, &(msg->buffer), &(msg->buflen));
 }
 
 int 
@@ -115,8 +113,16 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     sol_state* state = (sol_state*) user_p;
     message_event* recvmsg = &(state->recvmsg_);
 
-    recvmsg->flow = 0;
-    recvmsg->id = 0;
+    recvmsg->flow                 = 0;
+    recvmsg->id                   = 0;
+    recvmsg->req_id               = sol_msg_req_id( msg_p );
+    recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
+    recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
+    recvmsg->user_data            = state->user_data_;
+
+    solClient_msg_getApplicationMsgType(msg_p, &(recvmsg->application_message_type));
+    solClient_msg_getCorrelationId(msg_p, &(recvmsg->correlationid) );
+    sol_msg_replyto(msg_p, &(state->replytodest_), recvmsg);
 
     // ======================================
     // Populate Fields
@@ -212,16 +218,11 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
     }
 
     const std::string user_properties_payload = json.dump();
-    recvmsg->user_properties      = user_properties_payload.c_str();
+    recvmsg->user_properties = user_properties_payload.c_str();
 
-    recvmsg->req_id               = sol_msg_req_id( msg_p );
-    recvmsg->redelivered_flag     = sol_msg_redelivered_flag( msg_p );
-    recvmsg->discard_flag         = sol_msg_discard_flag( msg_p );
-
-    solClient_msg_getApplicationMsgType( msg_p, &(recvmsg->application_message_type) );
-    solClient_msg_getCorrelationId( msg_p, &(recvmsg->correlationid) );
-    
-    sol_msg_replyto ( msg_p, &(state->replytodest_), recvmsg );
+    // ======================================
+    // END Populate Fields
+    // ======================================
 
     if ( (rc = (solClient_returnCode_t) sol_msg_payload(msg_p, recvmsg)) != SOLCLIENT_OK) {
         // on_error( (SOLHANDLE)state, rc, "solClient_msg_getBinaryAttachmentPtr()" );
@@ -231,11 +232,6 @@ on_msg_cb(solClient_opaqueSession_pt sess_p, solClient_opaqueMsg_pt msg_p, void 
         // on_error( (SOLHANDLE)state, rc, "sol_msg_destination()" );
     }
 
-    recvmsg->user_data = state->user_data_;
-
-    // ======================================
-    // END Populate Fields
-    // ======================================
 
 
     if (state->msg_cb_ != 0) {

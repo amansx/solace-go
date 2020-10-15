@@ -71,8 +71,8 @@ sol_test_cbs(message_cb msg_cb, error_cb err_cb, pubevent_cb pub_cb, connectivit
     err_cb((SOLHANDLE)global_buffer, &err);
 
     message_event msg;
-    msg.buffer           = global_buffer;
-    msg.buflen           = strlen(msg.buffer);
+    msg.buffer           = (void*)global_buffer;
+    msg.buflen           = strlen((char*)msg.buffer);
     msg.destination      = "topic/string/1";
     msg.desttype         = TOPIC;
     msg.redelivered_flag = 0;
