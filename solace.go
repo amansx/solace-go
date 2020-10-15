@@ -44,8 +44,8 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.UserProperties          = C.GoString(m.user_properties)
 		evt.CorrelationID           = C.GoString(m.correlationid)
 
-		fmt.Printf("%T%v %T%v %T%v %v \n", m.buflen, m.buflen, m.buffer, m.buffer, m.buflen > 0)
-		fmt.Printf("%T%v %T%v %T%v %v \n",  C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen)))
+		fmt.Printf("%T %v %T %v %v \n", m.buflen, m.buflen, m.buffer, m.buffer, m.buflen > 0)
+		fmt.Printf("%T %v \n",  C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen)))
 
 		// if m.buflen {
 		//  buf := m.buffer[0]
