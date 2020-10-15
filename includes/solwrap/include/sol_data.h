@@ -94,8 +94,8 @@ extern "C" {
         SOLMSGID       id;
 
         const char*    application_message_type;
-        void*          buffer;
-        unsigned int   buflen;
+        const char*    buffer;
+        int            buflen;
         
         int            req_id;
         int            redelivered_flag;

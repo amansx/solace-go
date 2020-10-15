@@ -36,11 +36,15 @@ func gosol_on_msg(h SESSION, m *C.struct_message_event) {
 		evt.Discard                 = i2b(m.discard_flag)
 		evt.UserProperties          = C.GoString(m.user_properties)
 		evt.CorrelationID           = C.GoString(m.correlationid)
-		
-		if m.buffer != nil {
-			evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
-			evt.BinaryPayloadLen = uint(m.buflen)
-		}
+
+		// if m.buffer != nil {
+		// 	evt.BinaryPayload    = C.GoBytes(unsafe.Pointer(m.buffer), C.int(m.buflen))
+		// 	evt.BinaryPayloadLen = uint(m.buflen)
+		// }
+
+		payload := []byte(C.GoString(m.buffer))
+		evt.BinaryPayload    = payload
+		evt.BinaryPayloadLen = len(payload)
 
 		if m.application_message_type != nil {
 			evt.MessageType  = C.GoString(m.application_message_type)

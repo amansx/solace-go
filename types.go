@@ -110,7 +110,7 @@ type MessageEvent struct {
 
 	MessageType        string
 	BinaryPayload      []byte
-	BinaryPayloadLen   uint
+	BinaryPayloadLen   int
 
 	CorrelationID      string
 

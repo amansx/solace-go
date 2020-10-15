@@ -70,7 +70,8 @@ sol_msg_replyto(solClient_opaqueMsg_pt msg_p, solClient_destination_t* dest, mes
 int 
 sol_msg_payload(solClient_opaqueMsg_pt msg_p, message_event* msg) 
 {
-    return solClient_msg_getBinaryAttachmentPtr( msg_p, &(msg->buffer), &(msg->buflen) );
+    // return solClient_msg_getBinaryAttachmentPtr( msg_p, &(msg->buffer), &(msg->buflen) );
+    return solClient_msg_getBinaryAttachmentString( msg_p, &(msg->buffer) );
 }
 
 int 

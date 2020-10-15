@@ -25,39 +25,21 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
             conn.type = UP;
             conn.user_data = state->user_data_;
             if (state->conn_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->conn_cb_( (SOLHANDLE)state, &conn );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
             return;
         case SOLCLIENT_SESSION_EVENT_RECONNECTING_NOTICE:
             conn.type = RECONNECTING;
             conn.user_data = state->user_data_;
             if (state->conn_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->conn_cb_( (SOLHANDLE)state, &conn );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
             return;
         case SOLCLIENT_SESSION_EVENT_RECONNECTED_NOTICE:
             conn.type = RECONNECTED;
             conn.user_data = state->user_data_;
             if (state->conn_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->conn_cb_( (SOLHANDLE)state, &conn );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
             return;
         // PUB events
@@ -66,13 +48,7 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
             pub.correlation_data = eventInfo_p->correlation_p;
             pub.user_data = state->user_data_;
             if (state->pub_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->pub_cb_( (SOLHANDLE)state, &pub );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
             return;
         case SOLCLIENT_SESSION_EVENT_REJECTED_MSG_ERROR:
@@ -80,13 +56,7 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
             pub.correlation_data = eventInfo_p->correlation_p;
             pub.user_data = state->user_data_;
             if (state->pub_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->pub_cb_( (SOLHANDLE)state, &pub );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
             return;
         // Happy days
@@ -105,13 +75,7 @@ on_event_cb(solClient_opaqueSession_pt sess_p,
         case SOLCLIENT_SESSION_EVENT_CONNECT_FAILED_ERROR:
             conn.type = DOWN;
             if (state->conn_cb_ != 0) {
-#ifdef PYTHON_SUPPORT
-                PyGILState_STATE gstate = PyGILState_Ensure();
-#endif
                 state->conn_cb_( (SOLHANDLE)state, &conn );
-#ifdef PYTHON_SUPPORT
-                PyGILState_Release(gstate);
-#endif
             }
         case SOLCLIENT_SESSION_EVENT_SUBSCRIPTION_ERROR:
         case SOLCLIENT_SESSION_EVENT_RX_MSG_TOO_BIG_ERROR:
