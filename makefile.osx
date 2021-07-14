@@ -40,6 +40,7 @@ $(SONAME): $(SOL_SRC)
 	@$(CXX) --version	
 	@echo "=============================="
 	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(BUILD_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.osx/libcrypto.a             $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.osx/libsolclient.1.dylib    $(LIB_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.osx/libsolclient.a          $(LIB_DIR)
