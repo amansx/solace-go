@@ -125,12 +125,12 @@ sol_connect(SOLHANDLE handle, const char* propsfile)
 }
 
 int 
-sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* cn, const char* cd, const char* windowsize)
+sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* cn, const char* cd, const char* windowsize, const char* compression_level)
 {
     solClient_returnCode_t rc = SOLCLIENT_OK;
     sol_state* state = (sol_state*)handle;
 
-    state->props_ = read_prop_params(host, vpn, user, pass, cn, cd, windowsize);
+    state->props_ = read_prop_params(host, vpn, user, pass, cn, cd, windowsize, compression_level);
 
     solClient_session_createFuncInfo_t ss_fn_info =  SOLCLIENT_SESSION_CREATEFUNC_INITIALIZER;
     
