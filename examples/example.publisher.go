@@ -1,9 +1,12 @@
 package main
 
 import "C"
-import "fmt"
-import "sync"
-import solace "github.com/amansx/solace-go"
+import (
+	"fmt"
+	"sync"
+
+	solace "github.com/amansx/solace-go"
+)
 
 const queueName = "myqueue"
 func main() {
@@ -12,7 +15,7 @@ func main() {
 	wg.Add(1)
 
 	s := solace.NewSolace()
-	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "qaman", "aman")
+	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "qaman", "aman","0")
 
 	for i := 0; i < 10; i += 1 {
 		size := 10

@@ -132,7 +132,7 @@ type ISolace interface {
 	NotifyOnError(callback func(msg ErrorEvent))
 	NotifyOnPublisher(callback func(msg PublisherEvent))
 
-	Connect(host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string)
+	Connect(host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string, compression_level string)
 	
 	Disconnect()
 	

@@ -12,10 +12,14 @@ package solace
 //#include "sol_api.h"
 //#include "solace.c"
 import "C"
+
 // import "fmt"
-import "unsafe"
-import "encoding/json"
-import cptr "github.com/mattn/go-pointer"
+import (
+	"encoding/json"
+	"unsafe"
+
+	cptr "github.com/mattn/go-pointer"
+)
 
 type SESSION uint64
 
@@ -154,7 +158,7 @@ func Connect(sess SESSION, propsfile string) int {
 	return rc
 }
 
-func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string) int {
+func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass string, appName string, appDesc string, windowsize string, compression_level string) int {
 	// C.CString allocates new memory on the heap, so need to cleanup afterwards
 	chost    := C.CString(host)
 	cvpn     := C.CString(vpn)
@@ -163,7 +167,8 @@ func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass 
 	cappName := C.CString(appName)
 	cappDesc := C.CString(appDesc)
 	cws      := C.CString(windowsize)
-	rc      := int( C.sol_connect_with_params( C.SOLHANDLE(sess), chost, cvpn, cuser, cpass, cappName, cappDesc, cws ))
+	clevel   := C.CString(compression_level)
+	rc      := int( C.sol_connect_with_params( C.SOLHANDLE(sess), chost, cvpn, cuser, cpass, cappName, cappDesc, cws, clevel ))
 
 	C.free(unsafe.Pointer(chost))
 	C.free(unsafe.Pointer(cvpn))
@@ -172,6 +177,7 @@ func ConnectWithParams(sess SESSION, host string, vpn string, user string, pass 
 	C.free(unsafe.Pointer(cappName))
 	C.free(unsafe.Pointer(cappDesc))
 	C.free(unsafe.Pointer(cws))
+	C.free(unsafe.Pointer(clevel))
 
 	return rc
 }
