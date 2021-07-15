@@ -88,8 +88,8 @@ const char** read_props(const char* propsfile)
     return sp;
 }
 
-
-const char** read_prop_params(const char* host, const char* vpn, const char* user, const char* pass, const char* clientName, const char* appDesc, const char* windowsize) {
+const char **read_prop_params(const char *host, const char *vpn, const char *user, const char *pass, const char *clientName, const char *appDesc, const char *windowsize, const char *compression_level)
+{
 
     std::string SESSION_HOST_K = "SESSION_HOST";
     std::string SESSION_HOST_V = host;
@@ -112,6 +112,9 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     std::string SESSION_APP_DESC_K = "SESSION_APPLICATION_DESCRIPTION";
     std::string SESSION_APP_DESC_V = appDesc;
 
+    std::string SESSION_COMPRESSION_LEVEL_K = "SESSION_COMPRESSION_LEVEL";
+    std::string SESSION_COMPRESSION_LEVEL_V = compression_level;
+
     std::map<std::string, std::string> props;
     props[SESSION_HOST_K]            = trim(SESSION_HOST_V);
     props[SESSION_VPN_NAME_K]        = trim(SESSION_VPN_NAME_V);
@@ -120,6 +123,7 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     props[SESSION_PUB_WINDOW_SIZE_K] = trim(SESSION_PUB_WINDOW_SIZE_V);
     props[SESSION_APP_DESC_K]        = trim(SESSION_APP_DESC_V);
     props[SESSION_CLIENT_NAME_K]     = trim(SESSION_CLIENT_NAME_V);
+    props[SESSION_COMPRESSION_LEVEL_K] = trim(SESSION_COMPRESSION_LEVEL_V);
 
     // Retry Forever
     // props["SESSION_CONNECT_RETRIES"] = "-1";
@@ -133,7 +137,6 @@ const char** read_prop_params(const char* host, const char* vpn, const char* use
     props["SESSION_RECONNECT_RETRIES"]        = "-1";    
     props["SESSION_RECONNECT_RETRY_WAIT_MS"]  = "10000";
     props["SESSION_REAPPLY_SUBSCRIPTIONS"]    = "1";
-
 
     const char** sp = new const char*[ props.size()*2 +1 ];
     std::for_each( props.begin(), props.end(), inserter(sp) );

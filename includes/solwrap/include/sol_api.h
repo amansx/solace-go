@@ -14,7 +14,7 @@ extern "C" {
 
     SOL_API int sol_connect(SOLHANDLE handle, const char* propsfile);
     
-    SOL_API int sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* cn, const char* cd, const char* windowsize);
+    SOL_API int sol_connect_with_params(SOLHANDLE handle, const char* host, const char* vpn, const char* user, const char* pass, const char* cn, const char* cd, const char* windowsize, const char * compression_level);
     
     SOL_API int sol_disconnect(SOLHANDLE handle);
 

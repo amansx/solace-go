@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
-import "sync";
-import solace "github.com/amansx/solace-go"
+import (
+	"fmt"
+	"sync"
+
+	solace "github.com/amansx/solace-go"
+)
 
 const queueName = "myqueue"
 
@@ -13,7 +16,7 @@ func main() {
 	wg.Add(1)
 
 	s := solace.NewSolace()
-	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "", "")
+	s.Connect("host.docker.internal:55555", "default", "default", "", "1", "", "","0")
 
 	s.NotifyOnMessage(func(msg solace.MessageEvent) {
 		fmt.Printf("%+v\n\n", msg)
