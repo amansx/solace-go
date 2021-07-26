@@ -40,6 +40,7 @@ $(SONAME): $(SOL_SRC)
 	@$(CXX) --version	
 	@echo "=============================="
 	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(BUILD_DIR)
 	@cp $(SOLCLIENT_DIR)/lib.linux/libsolclient.a* $(LIB_DIR)
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && ar -rcs libsolwrap.a *.o && rm *.o
 
@@ -54,5 +55,5 @@ test:
 	$(RUN_TESTS)
 
 examples:
-	@cd /root/solace/examples && go build -o ../bin/pub.example.linux example.publisher.go
-	@cd /root/solace/examples && go build -o ../bin/sub.example.linux example.subscriber.go
+	@cd examples && go build -o ../bin/pub.example.linux example.publisher.go
+	@cd examples && go build -o ../bin/sub.example.linux example.subscriber.go

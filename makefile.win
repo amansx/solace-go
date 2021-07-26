@@ -44,6 +44,7 @@ $(SONAME): $(SOL_SRC)
 	@$(CXX) --version	
 	@echo "=============================="
 	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(BUILD_DIR)
 
 	@cp $(SOLCLIENT_DIR)/lib.win/libsolclient* $(LIB_DIR)/
 	@cd $(LIB_DIR) && $(CXX) -c $(CXXFLAGS_LIB) $(SOL_SRC) $(WRAPPER_LIBS) -fPIC && $(AR) -rcs libsolwrap.lib *.o && rm *.o
@@ -59,5 +60,5 @@ test:
 	$(RUN_TESTS)
 
 examples:
-	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/pub.example.win.exe example.publisher.go
-	cd /root/solace/examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/sub.example.win.exe example.subscriber.go
+	cd examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/pub.example.win.exe example.publisher.go
+	cd examples && CGO_ENABLED=1 CC=$(CC) CXX=$(CXX) GOOS=windows GOARCH=amd64 go build -o ../bin/sub.example.win.exe example.subscriber.go
